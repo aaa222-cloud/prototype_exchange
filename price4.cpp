@@ -4,7 +4,8 @@
 #include <string>
 #include "price4.hpp"
 
-
+namespace utils
+{
 Price4::Price4(const std::string& str)
 {
     // this implementation is kinda slow - better way to optimize?
@@ -42,6 +43,38 @@ std::string Price4::to_str() const
     return integer + "." + decimal.substr(0, last_pos + 1);
 }
 
+bool operator==(const Price4& a, const Price4& b)
+{
+    return a.unscaled() == b.unscaled();
+}
+
+bool operator!=(const Price4& a, const Price4& b)
+{
+    return !(a == b);
+}
+
+bool operator<(const Price4& a, const Price4& b)
+{
+    return a.unscaled() < b.unscaled();
+}
+
+bool operator<=(const Price4& a, const Price4& b)
+{
+    return !(a > b);
+}
+
+bool operator>(const Price4& a, const Price4& b)
+{
+    return a.unscaled() > b.unscaled();
+}
+
+bool operator>=(const Price4& a, const Price4& b)
+{
+    return !(a < b);
+}
+
+} // namespace utils
+
 // for test purpose
 // int main()
 // {
@@ -49,6 +82,11 @@ std::string Price4::to_str() const
 //     std::cout << p1.unscaled() << ", to_str = " << p1.to_str() << std::endl;
 //     std::cout << p2.unscaled() << ", to_str = " << p2.to_str() << std::endl;
 //     std::cout << p3.unscaled() << ", to_str = " << p3.to_str() << std::endl;
-//     std::cout << p4.unscaled() << ", to_str = " << p4.to_str() << std::endl;  
+//     std::cout << p4.unscaled() << ", to_str = " << p4.to_str() << std::endl;
+
+//     std::cout << "p1 < p2 ? " << (p1 < p2) << std::endl;
+//     std::cout << "p1 >= p2 ? " << (p1 >= p2) << std::endl;
+//     std::cout << "p3 > p4 ? " << (p3 > p4) << std::endl;
+//     std::cout << "p3 <= p4 ? " << (p3 <= p4) << std::endl;
 //     return 0;
 // }

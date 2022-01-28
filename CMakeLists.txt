@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.0.0)
+project(exchange VERSION 0.1.0)
+
+include(CTest)
+enable_testing()
+
+file(GLOB All_SRCS "${PROJECT_SOURCE_DIR}/*.hpp" "${PROJECT_SOURCE_DIR}/*.cpp")
+add_executable(exchange ${All_SRCS})
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
+
+include(FetchContent)
+
+FetchContent_Declare(json
+    GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
+    GIT_TAG v3.10.5)
+
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+    FetchContent_Populate(json)
+    add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
