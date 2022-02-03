@@ -4,7 +4,17 @@ project(exchange VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-file(GLOB All_SRCS "${PROJECT_SOURCE_DIR}/*.hpp" "${PROJECT_SOURCE_DIR}/*.cpp")
+set(All_SRCS
+    ${PROJECT_SOURCE_DIR}/main.cpp
+    ${PROJECT_SOURCE_DIR}/order.hpp
+    ${PROJECT_SOURCE_DIR}/order.cpp
+    ${PROJECT_SOURCE_DIR}/price4.hpp 
+    ${PROJECT_SOURCE_DIR}/price4.cpp
+    ${PROJECT_SOURCE_DIR}/size_rules.hpp 
+    ${PROJECT_SOURCE_DIR}/size_rules.cpp
+    ${PROJECT_SOURCE_DIR}/stock.hpp 
+    ${PROJECT_SOURCE_DIR}/stock.cpp
+)
 add_executable(exchange ${All_SRCS})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

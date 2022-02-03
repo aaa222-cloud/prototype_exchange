@@ -13,7 +13,8 @@ namespace order
     {
         market,
         limit,
-        iceburg
+        iceberg,
+        unknown
     };
 
     enum order_side
@@ -40,7 +41,8 @@ namespace order
         {
             {market, "market"},
             {limit, "limit"},
-            {iceburg, "iceburg"}
+            {iceberg, "iceberg"},
+            {unknown, "unknown"}
         }
     )
 
@@ -72,6 +74,7 @@ namespace order
 class OrderBase
 {
 public:
+    OrderBase() = default;
     OrderBase(
         int time, 
         int order_id, 
@@ -85,17 +88,26 @@ public:
     tif_(tif)
     {}
 
-    virtual order::order_type order_type() const = 0;
-    int reduce_quantity(int filled_quantity);
+    virtual ~OrderBase() {}
+
+    // should be pure virtual - use this way for serialisation issue
+    virtual order::order_type order_type() const { return order::order_type::unknown; };
+    virtual int reduce_quantity(int filled_quantity);
 
     int time() const { return time_; }
     int order_id() const { return order_id_; }
     int quantity() const { return quantity_; }
     order::time_in_force tif() const { return tif_; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(OrderBase, time_, order_id_, quantity_, tif_);
+    bool operator==(const OrderBase& a) const;
 
 private:
+    // function for serialise
+    template <typename BasicJsonType>
+    friend void to_json(BasicJsonType& j, const OrderBase& o);
+    template <typename BasicJsonType>
+    friend void from_json(const BasicJsonType& j, OrderBase& o);
+
     int time_;
     int order_id_;
     double quantity_;
@@ -105,6 +117,7 @@ private:
 class LimitOrder : public OrderBase
 {
 public:
+    LimitOrder() = default;
     LimitOrder(
         int time,
         int order_id, 
@@ -121,14 +134,22 @@ public:
     side_(side)
     {};
 
+    virtual ~LimitOrder() {}
+
     order::order_type order_type() const override { return order::order_type::limit; }
     const utils::Price4& limit_price() const { return limit_price_; }
     stock::stock_symbol symbol() const { return symbol_; }
     order::order_side side() const { return side_; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(LimitOrder, limit_price_, symbol_, side_);
+    bool operator==(const LimitOrder& a) const;
 
 private:
+    // function for serialise
+    template <typename BasicJsonType>
+    friend void to_json(BasicJsonType& j, const LimitOrder& o);
+    template <typename BasicJsonType>
+    friend void from_json(const BasicJsonType& j, LimitOrder& o);
+
     utils::Price4 limit_price_;
     stock::stock_symbol symbol_;
     order::order_side side_;
@@ -137,6 +158,7 @@ private:
 class MarketOrder : public OrderBase
 {
 public:
+    MarketOrder() = default;
     MarketOrder(
         int time,
         int order_id,
@@ -144,23 +166,24 @@ public:
         order::time_in_force tif,
         stock::stock_symbol symbol,
         order::order_side side
-    )
-    :
-    OrderBase(time, order_id, quantity, tif),
-    symbol_(symbol),
-    side_(side)
-    {
-        initialise();
-    }
+    );
+
+    virtual ~MarketOrder() {}
 
     order::order_type order_type() const override { return order::order_type::market; }
 
     stock::stock_symbol symbol() const { return symbol_; }
     order::order_side side() const { return side_; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MarketOrder, symbol_, side_);
+    bool operator==(const MarketOrder& a) const;
 
 private:
+    // function for serialise
+    template <typename BasicJsonType>
+    friend void to_json(BasicJsonType& j, const MarketOrder& o);
+    template <typename BasicJsonType>
+    friend void from_json(const BasicJsonType& j, MarketOrder& o);
+
     void initialise();
 
     stock::stock_symbol symbol_;
@@ -170,6 +193,7 @@ private:
 class IcebergOrder : public OrderBase
 {
 public:
+    IcebergOrder() = default;
     IcebergOrder(
         int time,
         int order_id,
@@ -179,35 +203,108 @@ public:
         order::order_side side,
         double display_quantity,
         double hidden_quantity
-    )
-    :
-    OrderBase(time, order_id, display_quantity, tif),
-    limit_price_(limit_price),
-    symbol_(symbol),
-    side_(side),
-    hidden_quantity_(hidden_quantity)
-    {
-        initialise();
-    }
+    );
 
-    order::order_type order_type() const override { return order::order_type::iceburg; }
+    virtual ~IcebergOrder() {}
+
+    order::order_type order_type() const override { return order::order_type::iceberg; }
+    int reduce_quantity(int filled_quantity) override;
 
     const utils::Price4& limit_price() const { return limit_price_; }
     stock::stock_symbol symbol() const { return symbol_; }
     order::order_side side() const { return side_; }
+    int display_quantity() const { return display_quantity_; }
     int hidden_quantity() const { return hidden_quantity_; }
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(IcebergOrder, limit_price_, symbol_, side_, hidden_quantity_);
+    bool operator==(const IcebergOrder& a) const;
 
 private:
+    // function for serialise
+    template <typename BasicJsonType>
+    friend void to_json(BasicJsonType& j, const IcebergOrder& o);
+    template <typename BasicJsonType>
+    friend void from_json(const BasicJsonType& j, IcebergOrder& o);
+
     void initialise();
 
     utils::Price4 limit_price_;
     stock::stock_symbol symbol_;
     order::order_side side_;
-    // display_quantity of iceburg order is represented using OrderBase::quantity_
+    int display_quantity_;
     int hidden_quantity_;
 };
+
+// function for serialisation
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const OrderBase& o)
+{
+    j = BasicJsonType{{"time", o.time_}, {"order_id", o.order_id_}, {"quantity", o.quantity_}, {"tif", o.tif_}};
+}
+
+template <typename BasicJsonType>
+void from_json(const BasicJsonType& j, OrderBase& o)
+{
+    j.at("time").get_to(o.time_);
+    j.at("order_id").get_to(o.order_id_);
+    j.at("quantity").get_to(o.quantity_);
+    j.at("tif").get_to(o.tif_);
+}
+
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const LimitOrder& o)
+{
+    j = static_cast<OrderBase>(o);
+    j["limit_price"] = o.limit_price_;
+    j["symbol"] = o.symbol_;
+    j["side"] = o.side_;
+}
+
+template <typename BasicJsonType>
+void from_json(const BasicJsonType& j, LimitOrder& o)
+{   
+    nlohmann::from_json(j, static_cast<OrderBase&>(o));
+    j.at("limit_price").get_to(o.limit_price_);
+    j.at("symbol").get_to(o.symbol_);
+    j.at("side").get_to(o.side_);
+}
+
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const MarketOrder& o)
+{
+    j = static_cast<OrderBase>(o);
+    j["symbol"] = o.symbol_;
+    j["side"] = o.side_;
+}
+
+template <typename BasicJsonType>
+void from_json(const BasicJsonType& j, MarketOrder& o)
+{
+    nlohmann::from_json(j, static_cast<OrderBase&>(o));
+    j.at("symbol").get_to(o.symbol_);
+    j.at("side").get_to(o.side_);
+}
+
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const IcebergOrder& o)
+{
+    j = static_cast<OrderBase>(o);
+    j["limit_price"] = o.limit_price_;
+    j["symbol"] = o.symbol_;
+    j["side"] = o.side_;
+    j["display_quantity"] = o.display_quantity_;
+    j["hidden_quantity"] = o.hidden_quantity_;
+}
+
+template <typename BasicJsonType>
+void from_json(const BasicJsonType& j, IcebergOrder& o)
+{
+    nlohmann::from_json(j, static_cast<OrderBase&>(o));
+    j.at("limit_price").get_to(o.limit_price_);
+    j.at("symbol").get_to(o.symbol_);
+    j.at("side").get_to(o.side_);
+    j.at("display_quantity").get_to(o.display_quantity_);
+    j.at("hidden_quantity").get_to(o.hidden_quantity_);
+}
 
 } // namespace order
 
