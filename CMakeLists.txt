@@ -10,6 +10,7 @@ set(All_SRCS
     ${PROJECT_SOURCE_DIR}/order.cpp
     ${PROJECT_SOURCE_DIR}/price4.hpp 
     ${PROJECT_SOURCE_DIR}/price4.cpp
+    ${PROJECT_SOURCE_DIR}/serialise.hpp
     ${PROJECT_SOURCE_DIR}/size_rules.hpp 
     ${PROJECT_SOURCE_DIR}/size_rules.cpp
     ${PROJECT_SOURCE_DIR}/stock.hpp 

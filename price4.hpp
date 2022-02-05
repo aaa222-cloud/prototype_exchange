@@ -45,13 +45,13 @@ bool operator>=(const Price4& a, const Price4& b);
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const Price4& p)
 {
-    j = BasicJsonType{{"unscaled", p.unscaled_}};
+    j = p.to_str();
 }
 
 template <typename BasicJsonType>
 void from_json(const BasicJsonType& j, Price4& p)
 {
-    p.unscaled_ = j["unscaled"].template get<long>();
+    p = Price4(j.template get<std::string>());
 }
 
 } // namespace utils

@@ -6,41 +6,56 @@
 
 namespace utils
 {
-Price4::Price4(const std::string& str)
+Price4::Price4(const std::string& s)
 {
-    // this implementation is kinda slow - better way to optimize?
-    std::stringstream is(str);
-    std::string integer, decimal;
+    const long unit = std::pow(10, Price4::scale);
 
-    std::getline(is, integer, '.');
-    std::getline(is, decimal, '.');
-    while (decimal.size() < Price4::scale)
+    const size_t num_chars = s.size();
+    const size_t pivot_idx = s.find(".");
+    if (pivot_idx == num_chars)
     {
-        decimal += "0";
+        unscaled_ = std::stol(s) * unit;
+    } 
+    else
+    {
+        unscaled_ = std::stol(s.substr(0, pivot_idx)) * unit;
+
+        // there is decimal part left
+        if (pivot_idx < num_chars - 1)
+        {
+            const std::string decimal_s = s.substr(pivot_idx + 1, num_chars - pivot_idx);
+            int num_digits = static_cast<int>(decimal_s.size());
+            long multiplier = 1;
+            while (num_digits < Price4::scale) { multiplier *= 10; ++num_digits; }
+            unscaled_ += std::stol(decimal_s) * multiplier;
+        }
     }
-    unscaled_ = std::stol(integer + decimal.substr(0, Price4::scale));
 }
 
 std::string Price4::to_str() const
 {
-    const std::string unscaled = std::to_string(unscaled_);
-    const size_t num_digits = unscaled.size();
-    const size_t pivot_idx = num_digits - static_cast<size_t>(Price4::scale);
-    const std::string integer = unscaled.substr(0, pivot_idx);
-    const std::string decimal = unscaled.substr(pivot_idx, num_digits);
-    //std::cout << "integer = " << integer << ", decimal = " << decimal << std::endl;
+    const long unit = std::pow(10, Price4::scale);
 
-    size_t last_pos = decimal.size();
-    while (last_pos > 0)
+    long integer = unscaled_ / unit;
+    long decimal = unscaled_ % unit;
+    if (decimal == 0) { return std::to_string(integer); }
+
+    std::string integer_s = std::to_string(integer) + ".";
+    // deal with leading 0s in decimal part
+    while (decimal * 10 < unit)
     {
-        if (decimal.at(--last_pos) != '0') { break; }
+        integer_s += "0";
+        decimal *= 10;
     }
-    //std::cout << "last_pos = " << last_pos << std::endl;
-    if (last_pos == 0)
+
+    // trim 0s at decimal part end
+    decimal = unscaled_ % unit;
+    while (decimal % 10 == 0)
     {
-        return integer;
+        decimal /= 10;
     }
-    return integer + "." + decimal.substr(0, last_pos + 1);
+    
+    return  integer_s + std::to_string(decimal);
 }
 
 bool operator==(const Price4& a, const Price4& b)

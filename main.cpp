@@ -2,14 +2,16 @@
 #include "price4.hpp"
 #include "order.hpp"
 #include "stock.hpp"
+#include "size_rules.hpp"
 
 using json = nlohmann::json;
 
 int main(int, char**) {
-    // std::cout << "Hello, world!\n";
-
-    // Price4 p1("139.96"), p2("139"), p3("139.01"), p4("139.00");
+    // utils::Price4 p1("139.96"), p2("139"), p3("139.01"), p4("139.");
     // std::cout << p1.unscaled() << ", to_str = " << p1.to_str() << std::endl;
+    // std::cout << p2.unscaled() << ", to_str = " << p2.to_str() << std::endl;
+    // std::cout << p3.unscaled() << ", to_str = " << p3.to_str() << std::endl;
+    // std::cout << p4.unscaled() << ", to_str = " << p4.to_str() << std::endl;
 
     // test price4 serialisation
     // utils::Price4 p1("139.96");
@@ -45,14 +47,48 @@ int main(int, char**) {
     // auto market_order2 = j.get<order::MarketOrder>();
 
     // test iceburg_order serialisation
-    order::IcebergOrder iceberg_order(
-        1625787615, 1000134, order::time_in_force::day, utils::Price4("139.96"),
-        stock::stock_symbol::AAPL, order::order_side::buy, 100, 200);
-    json j = iceberg_order;
-    std::cout << j << std::endl;
+    // order::IcebergOrder iceberg_order(
+    //     1625787615, 1000134, order::time_in_force::day, utils::Price4("139.96"),
+    //     stock::stock_symbol::AAPL, order::order_side::buy, 100, 200);
+    // json j = iceberg_order;
+    // std::cout << j << std::endl;
 
-    auto iceberg_order2 = j.get<order::IcebergOrder>();
-    std::cout << (iceberg_order2 == iceberg_order) << std::endl;
+    // auto iceberg_order2 = j.get<order::IcebergOrder>();
+    // std::cout << (iceberg_order2 == iceberg_order) << std::endl;
+
+    // test SingleSizeRule
+    // size_rules::SingleTickSizeRule rule1(utils::Price4("0"), utils::Price4("1"), utils::Price4("0.0001"));
+    // json j1 = rule1;
+    // std::cout << j1 << std::endl;
+    // auto rule11 = j1.get<size_rules::SingleTickSizeRule>();
+
+    // size_rules::SingleTickSizeRule rule2(utils::Price4("1"), std::nullopt, utils::Price4("0.01"));
+    // json j2 = rule2;
+    // json j2 =  R"({"from_price": "1", "tick_size": "0.01"})"_json;
+    // std::cout << j2 << std::endl;
+    // auto rule21 = j2.get<size_rules::SingleTickSizeRule>();
+    // json j3 = rule21;
+    // std::cout << j3 << std::endl;
+
+    // size_rules::SingleLotSizeRule rule2(utils::Price4("1"), std::nullopt, 100);
+    // json j2 = rule2;
+    // // json j2 =  R"({"from_price": "1", "lot_size": "100"})"_json;
+    // std::cout << j2 << std::endl;
+    // auto rule21 = j2.get<size_rules::SingleLotSizeRule>();
+    // json j3 = rule21;
+    // std::cout << j3 << std::endl;
+
+    // const std::vector<size_rules::SingleTickSizeRule> rules = {
+    //     size_rules::SingleTickSizeRule(utils::Price4("0"), utils::Price4("1"), utils::Price4("0.0001")),
+    //     size_rules::SingleTickSizeRule(utils::Price4("1"), std::nullopt, utils::Price4("0.01"))
+    // };
+    // const size_rules::TickSizeRules tick_rules(rules);
+    // json j = tick_rules;
+    // std::cout << j << std::endl;
+    // const auto rules2 = j.get<size_rules::TickSizeRules>();
+    // utils::Price4 p1("1.234"), p2("0.234");
+    // std::cout << p1.to_str() << " is valid ? " << tick_rules.is_valid(p1) << std::endl;
+    // std::cout << p2.to_str() << " is valid ? " << tick_rules.is_valid(p2) << std::endl;
 
     return 0;
 }

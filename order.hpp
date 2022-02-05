@@ -6,7 +6,6 @@
 #include "price4.hpp"
 #include "stock.hpp"
 
-// To do: need better serialisation for Order types - especially iceburg order
 namespace order
 {
     enum order_type
