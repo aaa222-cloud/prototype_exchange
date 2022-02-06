@@ -6,6 +6,8 @@ enable_testing()
 
 set(All_SRCS
     ${PROJECT_SOURCE_DIR}/main.cpp
+    ${PROJECT_SOURCE_DIR}/event.hpp
+    ${PROJECT_SOURCE_DIR}/event.cpp
     ${PROJECT_SOURCE_DIR}/order.hpp
     ${PROJECT_SOURCE_DIR}/order.cpp
     ${PROJECT_SOURCE_DIR}/price4.hpp 

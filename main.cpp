@@ -1,4 +1,5 @@
 #include <iostream>
+#include "event.hpp"
 #include "price4.hpp"
 #include "order.hpp"
 #include "stock.hpp"
@@ -89,6 +90,30 @@ int main(int, char**) {
     // utils::Price4 p1("1.234"), p2("0.234");
     // std::cout << p1.to_str() << " is valid ? " << tick_rules.is_valid(p1) << std::endl;
     // std::cout << p2.to_str() << " is valid ? " << tick_rules.is_valid(p2) << std::endl;
+
+    // test event
+    // const trade_event::TradeEvent event1(utils::Price4("10.02"), 100);
+    // json j1 = event1;
+    // std::cout << j1 << std::endl;
+    // const auto event12 = j1.get<trade_event::TradeEvent>();
+
+    // const std::vector<trade_event::OrderUpdateInfoCPtr> bid_info = {
+    //     std::make_shared<const trade_event::OrderUpdateInfo>(
+    //         utils::Price4("10.01"), 0, trade_event::trade_action::delete_delete
+    //     ),
+    //     std::make_shared<const trade_event::OrderUpdateInfo>(
+    //         utils::Price4("10.00"), 0, trade_event::trade_action::delete_delete
+    //     )
+    // };
+    // const std::vector<trade_event::OrderUpdateInfoCPtr> ask_info = {
+    //      std::make_shared<const trade_event::OrderUpdateInfo>(
+    //         utils::Price4("10.00"), 200, trade_event::trade_action::add_add
+    //     )
+    // };
+    // const trade_event::DepthUpdateEvent event2(bid_info, ask_info);
+    // json j2 = event2;
+    // std::cout << j2 << std::endl;
+    // const auto event22 = j2.get<trade_event::DepthUpdateEvent>();
 
     return 0;
 }

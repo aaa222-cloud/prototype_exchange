@@ -21,6 +21,31 @@ bool LimitOrder::operator==(const LimitOrder& a) const
     side_ == a.side_ && OrderBase::operator==(a));
 }
 
+bool operator<(const LimitOrder& a, const LimitOrder& b)
+{
+    if (a.symbol() != b.symbol())
+    {
+        throw std::runtime_error("Comparison operator only supports limit orders on the same underlier.");
+    }
+
+    if (a.side() != b.side())
+    {
+        throw std::runtime_error("Comparison operator only supports both bid or ask limit orders.");
+    }
+
+    // < means lower execution priority
+    if (a.side() == order_side::buy)
+    {
+        return a.limit_price() < b.limit_price() || (a.limit_price() == b.limit_price() && a.time() > b.time());
+    }
+    return (a.limit_price() > b.limit_price()) || (a.limit_price() == b.limit_price() && a.time() > b.time());
+}
+
+bool operator>(const LimitOrder& a, const LimitOrder& b)
+{
+    return b < a;
+}
+
 MarketOrder::MarketOrder(
     int time,
     int order_id,
@@ -69,10 +94,7 @@ IcebergOrder::IcebergOrder(
     double hidden_quantity
 )
 :
-OrderBase(time, order_id, 0, tif),
-limit_price_(limit_price),
-symbol_(symbol),
-side_(side),
+LimitOrder(time, order_id, 0, tif, limit_price, symbol, side),
 display_quantity_(display_quantity),
 hidden_quantity_(hidden_quantity)
 {
@@ -87,8 +109,8 @@ int IcebergOrder::reduce_quantity(int filled_quantity)
 
 bool IcebergOrder::operator==(const IcebergOrder& a) const
 {
-    return (limit_price_ == a.limit_price_ && symbol_ == a.symbol_ && 
-    side_ == a.side_ && display_quantity_ == a.display_quantity_ && 
+    return (limit_price() == a.limit_price() && symbol() == a.symbol() && 
+    side() == a.side() && display_quantity_ == a.display_quantity_ && 
     hidden_quantity_ == a.hidden_quantity_ && OrderBase::operator==(a));
 }
 

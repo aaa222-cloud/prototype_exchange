@@ -154,6 +154,9 @@ private:
     order::order_side side_;
 };
 
+bool operator<(const LimitOrder& a, const LimitOrder& b);
+bool operator>(const LimitOrder& a, const LimitOrder& b);
+
 class MarketOrder : public OrderBase
 {
 public:
@@ -189,7 +192,7 @@ private:
     order::order_side side_;
 };
 
-class IcebergOrder : public OrderBase
+class IcebergOrder : public LimitOrder
 {
 public:
     IcebergOrder() = default;
@@ -208,10 +211,6 @@ public:
 
     order::order_type order_type() const override { return order::order_type::iceberg; }
     int reduce_quantity(int filled_quantity) override;
-
-    const utils::Price4& limit_price() const { return limit_price_; }
-    stock::stock_symbol symbol() const { return symbol_; }
-    order::order_side side() const { return side_; }
     int display_quantity() const { return display_quantity_; }
     int hidden_quantity() const { return hidden_quantity_; }
 
@@ -226,9 +225,6 @@ private:
 
     void initialise();
 
-    utils::Price4 limit_price_;
-    stock::stock_symbol symbol_;
-    order::order_side side_;
     int display_quantity_;
     int hidden_quantity_;
 };
@@ -286,10 +282,7 @@ void from_json(const BasicJsonType& j, MarketOrder& o)
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const IcebergOrder& o)
 {
-    j = static_cast<OrderBase>(o);
-    j["limit_price"] = o.limit_price_;
-    j["symbol"] = o.symbol_;
-    j["side"] = o.side_;
+    j = static_cast<LimitOrder>(o);
     j["display_quantity"] = o.display_quantity_;
     j["hidden_quantity"] = o.hidden_quantity_;
 }
@@ -297,10 +290,7 @@ void to_json(BasicJsonType& j, const IcebergOrder& o)
 template <typename BasicJsonType>
 void from_json(const BasicJsonType& j, IcebergOrder& o)
 {
-    nlohmann::from_json(j, static_cast<OrderBase&>(o));
-    j.at("limit_price").get_to(o.limit_price_);
-    j.at("symbol").get_to(o.symbol_);
-    j.at("side").get_to(o.side_);
+    nlohmann::from_json(j, static_cast<LimitOrder&>(o));
     j.at("display_quantity").get_to(o.display_quantity_);
     j.at("hidden_quantity").get_to(o.hidden_quantity_);
 }

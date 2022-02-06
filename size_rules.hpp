@@ -45,7 +45,7 @@ namespace size_rules
         T size_step() const { return size_step_; }
 
     private:
-        // function for serialise
+        // function for serialise - is there a better way?
         template <typename BasicJsonType>
         friend void to_json(BasicJsonType& j, const SingleTickSizeRule& o);
         template <typename BasicJsonType>
