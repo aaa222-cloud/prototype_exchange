@@ -1,6 +1,7 @@
 #ifndef ORDER_H_
 #define ORDER_H_
 
+#include <memory>
 #include <nlohmann/json.hpp>
 #include <string>
 #include "price4.hpp"
@@ -18,8 +19,8 @@ namespace order
 
     enum order_side
     {
-        buy,
-        sell
+        bid,
+        ask
     };
 
     enum type
@@ -48,8 +49,8 @@ namespace order
     NLOHMANN_JSON_SERIALIZE_ENUM(
         order_side,
         {
-            {buy, "buy"},
-            {sell, "sell"}
+            {bid, "buy"},
+            {ask, "sell"}
         }
     )
 
@@ -228,6 +229,19 @@ private:
     int display_quantity_;
     int hidden_quantity_;
 };
+
+// smart pointers
+typedef std::shared_ptr<OrderBase> OrderBasePtr;
+typedef std::shared_ptr<const OrderBase> OrderBaseCPtr;
+
+typedef std::shared_ptr<LimitOrder> LimitOrderPtr;
+typedef std::shared_ptr<const LimitOrder> LimitOrderCPtr;
+
+typedef std::shared_ptr<MarketOrder> MarketOrderPtr;
+typedef std::shared_ptr<const MarketOrder> MarketOrderCPtr;
+
+typedef std::shared_ptr<IcebergOrder> IcebergOrderPtr;
+typedef std::shared_ptr<const IcebergOrder> IcebergOrderCPtr;
 
 // function for serialisation
 template <typename BasicJsonType>

@@ -2,15 +2,15 @@
 
 namespace trade_event
 {
-void DepthUpdateEvent::add(const OrderUpdateInfoCPtr& new_info, order_side side)
+void DepthUpdateEvent::add(const OrderUpdateInfoCPtr& new_info, order::order_side side)
 {
     switch(side)
     {
-    case order_side::bid:
+    case order::order_side::bid:
         bid_order_update_info_.push_back(new_info);
         break;
     
-    case order_side::ask:
+    case order::order_side::ask:
         ask_order_update_info_.push_back(new_info);
         break;
 

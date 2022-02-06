@@ -3,6 +3,7 @@
 
 #include <nlohmann/json.hpp>
 #include <vector>
+#include "order.hpp"
 #include "price4.hpp"
 #include "serialise.hpp"
 
@@ -21,12 +22,6 @@ enum trade_type
     depth_update
 };
 
-enum order_side
-{
-    bid,
-    ask
-};
-
 NLOHMANN_JSON_SERIALIZE_ENUM(
     trade_action,
     {
@@ -43,6 +38,23 @@ NLOHMANN_JSON_SERIALIZE_ENUM(
         {depth_update, "DEPTH_UPDATE"}
     }
 )
+
+class EventBase;
+class TradeEvent;
+class DepthUpdateEvent;
+class OrderUpdateInfo;
+
+typedef std::shared_ptr<EventBase> EventBasePtr;
+typedef std::shared_ptr<const EventBase> EventBaseCPtr;
+
+typedef std::shared_ptr<TradeEvent> TradeEventPtr;
+typedef std::shared_ptr<const TradeEvent> TradeEventCPtr;
+
+typedef std::shared_ptr<OrderUpdateInfo> OrderUpdateInfoPtr;
+typedef std::shared_ptr<const OrderUpdateInfo> OrderUpdateInfoCPtr;
+
+typedef std::shared_ptr<DepthUpdateEvent> DepthUpdateEventPtr;
+typedef std::shared_ptr<const DepthUpdateEvent> DepthUpdateEventCPtr;
 
 // to do: think about the inheritance structure - kinda wierd...
 class EventBase
@@ -123,9 +135,6 @@ private:
     trade_event::trade_action action_;
 };
 
-typedef std::shared_ptr<const EventBase> EventBaseCPtr;
-typedef std::shared_ptr<const OrderUpdateInfo> OrderUpdateInfoCPtr;
-
 class DepthUpdateEvent : public EventBase
 {
 public:
@@ -150,7 +159,7 @@ public:
         return ask_order_update_info_;
     }
 
-    void add(const OrderUpdateInfoCPtr& new_info, order_side side);
+    void add(const OrderUpdateInfoCPtr& new_info, order::order_side side);
 
 private:
     // function for serialise

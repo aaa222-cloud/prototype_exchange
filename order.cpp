@@ -34,7 +34,7 @@ bool operator<(const LimitOrder& a, const LimitOrder& b)
     }
 
     // < means lower execution priority
-    if (a.side() == order_side::buy)
+    if (a.side() == order_side::bid)
     {
         return a.limit_price() < b.limit_price() || (a.limit_price() == b.limit_price() && a.time() > b.time());
     }
