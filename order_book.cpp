@@ -121,16 +121,6 @@ trade_event::EventBaseCPtr OrderBook::cancel_order(int order_id)
     return std::make_shared<trade_event::DepthUpdateEvent>(std::vector<trade_event::OrderUpdateInfoCPtr>(), updates);
 }
 
-// bool OrderBook::order_crossed(const LimitOrderPtr& o) const
-// {
-//     if (o->side() == side_ || order_queue_.empty()) return false;
-
-//     const bool crossed = o->side() == order_side::bid ? order_queue_.top()->limit_price <= o->limit_price() :
-//         order_queue_.top()->limit_price >= o->limit_price();
-
-//     return crossed;
-// }
-
 bool OrderBook::order_crossed(const OrderBaseCPtr& o) const
 {
     if (o->side() == side_ || order_queue_.empty()) return false;
@@ -150,10 +140,10 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
         throw std::runtime_error("Cannot match order with the same side.");
     }
 
+    // agressively reserve memory ?
     std::vector<trade_event::EventBaseCPtr> events; events.reserve(2);
-    std::vector<trade_event::OrderUpdateInfoCPtr> updates;
-    // agressively reserve memory - to do
-    updates.reserve(order_queue_.size());
+    std::vector<trade_event::OrderUpdateInfoCPtr> updates; updates.reserve(order_queue_.size());
+    
     while (o->quantity() > 0 && !order_queue_.empty() && order_crossed(o))
     {
         auto& target_o = order_queue_.top();
@@ -190,57 +180,5 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
     // note: unfilled limit order will be inserted to other order book - handle outside
     return events;
 }
-
-// std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const MarketOrderPtr& o)
-// {
-//     if (o->side() == side_)
-//     {
-//         throw std::runtime_error("Cannot match order with the same side.");
-//     }
-
-//     std::vector<trade_event::EventBaseCPtr> events; events.reserve(2);
-//     std::vector<trade_event::OrderUpdateInfoCPtr> updates;
-//     // agressively reserve memory - to do
-//     updates.reserve(order_queue_.size());
-//     while (o->quantity() > 0 && !order_queue_.empty())
-//     {
-//         auto& target_o = order_queue_.top();
-//         const int full_filled_quantity = std::min(target_o->quantity(), o->quantity());
-        
-//         o->reduce_quantity(full_filled_quantity);
-//         target_o->reduce_quantity(full_filled_quantity);
-        
-//         events.emplace_back(
-//             std::make_shared<trade_event::TradeEvent>(target_o->limit_price(), full_filled_quantity);
-//         );
-//         updates.emplace_back(
-//             std::make_shared<trade_event::OrderUpdateInfo>(
-//             target_o->limit_price(), full_filled_quantity, trade_event::trade_action::add_add)
-//         );
-
-//         if (target_o->quantity() == 0)
-//         {
-//             order_queue_.pop();
-//         }
-//     }
-
-//     if (side_ == order_side::bid)
-//     {
-//         events.emplace_back(
-//             std::make_shared<trade_event::DepthUpdateEvent>(updates, std::vector<trade_event::OrderUpdateInfoCPtr>())
-//         );
-//     }
-//     else{
-//         events.emplace_back(
-//             std::make_shared<trade_event::DepthUpdateEvent>(std::vector<trade_event::OrderUpdateInfoCPtr>(), updates)
-//         );
-//     }
-//     // note: unfilled market order will be canceled
-//     return events;
-// }
-
-// std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const LimitOrderPtr& o)
-// {
-// }
 
 } // namespace order
