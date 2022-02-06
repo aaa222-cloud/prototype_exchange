@@ -12,13 +12,12 @@ int OrderBase::reduce_quantity(int filled_quantity)
 bool OrderBase::operator==(const OrderBase& a) const
 {
     return (time_ == a.time_ && order_id_ == a.order_id_ && 
-    quantity_ == a.quantity_ && tif_ == a.tif_);
+    quantity_ == a.quantity_ && side_ == a.side_ && tif_ == a.tif_);
 }
 
 bool LimitOrder::operator==(const LimitOrder& a) const
 {
-    return (limit_price_ == a.limit_price_ && symbol_ == a.symbol_ && 
-    side_ == a.side_ && OrderBase::operator==(a));
+    return (limit_price_ == a.limit_price_ && symbol_ == a.symbol_ && OrderBase::operator==(a));
 }
 
 bool operator<(const LimitOrder& a, const LimitOrder& b)
@@ -55,9 +54,8 @@ MarketOrder::MarketOrder(
     order::order_side side
 )
 :
-OrderBase(time, order_id, quantity, tif),
-symbol_(symbol),
-side_(side)
+OrderBase(time, order_id, quantity, side, tif),
+symbol_(symbol)
 {
     initialise();
 }
@@ -72,7 +70,7 @@ void MarketOrder::initialise()
 
 bool MarketOrder::operator==(const MarketOrder& a) const
 {
-    return (symbol_ == a.symbol_ && side_ == a.side_ && OrderBase::operator==(a));
+    return (symbol_ == a.symbol_ && OrderBase::operator==(a));
 }
 
 void IcebergOrder::initialise()

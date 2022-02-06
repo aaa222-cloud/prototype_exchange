@@ -1,34 +1,25 @@
 #include "order_book.hpp"
+#include "price4.hpp"
 
 namespace order
 {
-
-// void CanceledOrderManager::cancel_order(const OrderBaseCPtr& o)
-// {
-//     invalid_ids_.insert(o->order_id());
-// }
-
-// bool is_canceled(const OrderBaseCPtr& o) const
-// {
-//     return invalid_ids_.count(o->order_id()) > 0;
-// }
 
 // to do : need better error message and exception handling
 void OrderBook::initialise(const std::vector<LimitOrderPtr>& orders)
 {
     for (const auto& o : orders)
     {
-        if (o->side() != side)
+        if (o->side() != side_)
         {
             throw std::runtime_error("Cannot create order book with order's side different from specified.");
         }
-        if (valid_ids.count(o->order_id()))
+        if (valid_ids_.count(o->order_id()))
         {
             throw std::runtime_error("Order id already exists in order book.");
         }
 
         order_queue_.push(o);
-        valid_ids_.add(o->order_id());
+        valid_ids_.insert(o->order_id());
     }
 }
 
@@ -44,12 +35,12 @@ side_(side)
 
 trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
 {
-    if (order->side() != side_)
+    if (o->side() != side_)
     {
         throw std::runtime_error("Cannot insert order with mismatch side.");
     }
 
-    if (canceled_order_mgr_->is_canceled())
+    if (valid_ids_.count(o->order_id()))
     {
         return std::make_shared<trade_event::DepthUpdateEvent>(
             std::vector<trade_event::OrderUpdateInfoCPtr>(),
@@ -57,7 +48,7 @@ trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
         );
     }
     order_queue_.push(o);
-    valid_ids_.add(o->order_id());
+    valid_ids_.insert(o->order_id());
 
     // need a function here
     std::vector<trade_event::OrderUpdateInfoCPtr> bid_update;
@@ -78,7 +69,7 @@ trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
 
     default:
         break;
-    })
+    }
 
     return std::make_shared<trade_event::DepthUpdateEvent>(bid_update, ask_update);
 }
@@ -126,9 +117,12 @@ bool OrderBook::order_crossed(const OrderBaseCPtr& o) const
     if (o->side() == side_ || order_queue_.empty()) return false;
 
     const bool is_market_order = o->order_type() == order::order_type::market;
+    const auto limited_o = dynamic_cast<order::LimitOrder>(o);
+    const auto& o_price = limited_o->limit_price();
+    const auto& best_price_in_book = order_queue_.top()->limit_price();
+
     const bool crossed = is_market_order ? true : 
-        (o->side() == order_side::bid ? order_queue_.top()->limit_price <= o->limit_price() :
-            order_queue_.top()->limit_price >= o->limit_price());
+        (o->side() == order_side::bid ? best_price_in_book <= o_price : best_price_in_book >= o_price);
 
     return crossed;
 }
@@ -153,7 +147,7 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
         target_o->reduce_quantity(full_filled_quantity);
         
         events.emplace_back(
-            std::make_shared<trade_event::TradeEvent>(target_o->limit_price(), full_filled_quantity);
+            std::make_shared<trade_event::TradeEvent>(target_o->limit_price(), full_filled_quantity)
         );
         updates.emplace_back(
             std::make_shared<trade_event::OrderUpdateInfo>(
