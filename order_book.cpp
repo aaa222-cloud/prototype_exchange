@@ -115,14 +115,18 @@ trade_event::EventBaseCPtr OrderBook::cancel_order(int order_id)
 bool OrderBook::order_crossed(const OrderBaseCPtr& o) const
 {
     if (o->side() == side_ || order_queue_.empty()) return false;
+    if (o->order_type() == order::order_type::market) return true;
 
-    const bool is_market_order = o->order_type() == order::order_type::market;
     const auto limited_o = std::dynamic_pointer_cast<const order::LimitOrder>(o);
+    if (!limited_o)
+    {
+        throw std::runtime_error("Cannot cast to LimitOrder when checking if orders cross.");
+    }
+
     const auto& o_price = limited_o->limit_price();
     const auto& best_price_in_book = order_queue_.top()->limit_price();
-
-    const bool crossed = is_market_order ? true : 
-        (o->side() == order_side::bid ? best_price_in_book <= o_price : best_price_in_book >= o_price);
+    const bool crossed = o->side() == order_side::bid ? best_price_in_book <= o_price : 
+        best_price_in_book >= o_price;
 
     return crossed;
 }
