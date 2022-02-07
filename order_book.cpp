@@ -117,7 +117,7 @@ bool OrderBook::order_crossed(const OrderBaseCPtr& o) const
     if (o->side() == side_ || order_queue_.empty()) return false;
 
     const bool is_market_order = o->order_type() == order::order_type::market;
-    const auto limited_o = dynamic_cast<order::LimitOrder>(o);
+    const auto limited_o = std::dynamic_pointer_cast<const order::LimitOrder>(o);
     const auto& o_price = limited_o->limit_price();
     const auto& best_price_in_book = order_queue_.top()->limit_price();
 
