@@ -79,6 +79,7 @@ public:
         int time, 
         int order_id, 
         int quantity,
+        stock::stock_symbol symbol,
         order::order_side side,
         order::time_in_force tif
     ) 
@@ -99,6 +100,7 @@ public:
     int time() const { return time_; }
     int order_id() const { return order_id_; }
     int quantity() const { return quantity_; }
+    stock::stock_symbol symbol() const { return symbol_; }
     order::order_side side() const { return side_; }
     order::time_in_force tif() const { return tif_; }
 
@@ -114,6 +116,7 @@ private:
     int time_;
     int order_id_;
     double quantity_;
+    stock::stock_symbol symbol_;
     order::order_side side_;
     order::time_in_force tif_;
 };
@@ -132,16 +135,14 @@ public:
         order::order_side side
     ) 
     : 
-    OrderBase(time, order_id, quantity, side, tif),
-    limit_price_(limit_price),
-    symbol_(symbol_)
+    OrderBase(time, order_id, quantity, symbol, side, tif),
+    limit_price_(limit_price)
     {};
 
     virtual ~LimitOrder() {}
 
     order::order_type order_type() const override { return order::order_type::limit; }
     const utils::Price4& limit_price() const { return limit_price_; }
-    stock::stock_symbol symbol() const { return symbol_; }
     
     bool operator==(const LimitOrder& a) const;
 
@@ -153,7 +154,6 @@ private:
     friend void from_json(const BasicJsonType& j, LimitOrder& o);
 
     utils::Price4 limit_price_;
-    stock::stock_symbol symbol_;
 };
 
 bool operator<(const LimitOrder& a, const LimitOrder& b);
@@ -175,8 +175,6 @@ public:
     virtual ~MarketOrder() {}
 
     order::order_type order_type() const override { return order::order_type::market; }
-    stock::stock_symbol symbol() const { return symbol_; }
-
     bool operator==(const MarketOrder& a) const;
 
 private:
@@ -187,8 +185,6 @@ private:
     friend void from_json(const BasicJsonType& j, MarketOrder& o);
 
     void initialise();
-
-    stock::stock_symbol symbol_;
 };
 
 class IcebergOrder : public LimitOrder
@@ -246,7 +242,7 @@ template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const OrderBase& o)
 {
     j = BasicJsonType{{"time", o.time_}, {"order_id", o.order_id_}, {"quantity", o.quantity_}, 
-        {"side", o.side_}, {"tif", o.tif_}};
+        {"symbol", o.symbol_}, {"side", o.side_}, {"tif", o.tif_}};
 }
 
 template <typename BasicJsonType>
@@ -255,6 +251,7 @@ void from_json(const BasicJsonType& j, OrderBase& o)
     j.at("time").get_to(o.time_);
     j.at("order_id").get_to(o.order_id_);
     j.at("quantity").get_to(o.quantity_);
+    j.at("symbol").get_to(o.symbol_);
     j.at("side").get_to(o.side_);
     j.at("tif").get_to(o.tif_);
 }
@@ -264,7 +261,6 @@ void to_json(BasicJsonType& j, const LimitOrder& o)
 {
     j = static_cast<OrderBase>(o);
     j["limit_price"] = o.limit_price_;
-    j["symbol"] = o.symbol_;
 }
 
 template <typename BasicJsonType>
@@ -272,21 +268,18 @@ void from_json(const BasicJsonType& j, LimitOrder& o)
 {   
     nlohmann::from_json(j, static_cast<OrderBase&>(o));
     j.at("limit_price").get_to(o.limit_price_);
-    j.at("symbol").get_to(o.symbol_);
 }
 
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const MarketOrder& o)
 {
     j = static_cast<OrderBase>(o);
-    j["symbol"] = o.symbol_;
 }
 
 template <typename BasicJsonType>
 void from_json(const BasicJsonType& j, MarketOrder& o)
 {
     nlohmann::from_json(j, static_cast<OrderBase&>(o));
-    j.at("symbol").get_to(o.symbol_);
 }
 
 template <typename BasicJsonType>
