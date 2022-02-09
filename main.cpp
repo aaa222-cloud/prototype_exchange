@@ -92,28 +92,35 @@ int main(int, char**) {
     // std::cout << p2.to_str() << " is valid ? " << tick_rules.is_valid(p2) << std::endl;
 
     // test event
-    // const trade_event::TradeEvent event1(utils::Price4("10.02"), 100);
-    // json j1 = event1;
-    // std::cout << j1 << std::endl;
-    // const auto event12 = j1.get<trade_event::TradeEvent>();
+    const trade_event::TradeEvent event1(utils::Price4("10.02"), 100);
+    json j1 = event1;
+    std::cout << j1 << std::endl;
+    const auto event12 = j1.get<trade_event::TradeEvent>();
 
-    // const std::vector<trade_event::OrderUpdateInfoCPtr> bid_info = {
-    //     std::make_shared<const trade_event::OrderUpdateInfo>(
-    //         utils::Price4("10.01"), 0, trade_event::trade_action::delete_delete
-    //     ),
-    //     std::make_shared<const trade_event::OrderUpdateInfo>(
-    //         utils::Price4("10.00"), 0, trade_event::trade_action::delete_delete
-    //     )
-    // };
-    // const std::vector<trade_event::OrderUpdateInfoCPtr> ask_info = {
-    //      std::make_shared<const trade_event::OrderUpdateInfo>(
-    //         utils::Price4("10.00"), 200, trade_event::trade_action::add_add
-    //     )
-    // };
-    // const trade_event::DepthUpdateEvent event2(bid_info, ask_info);
-    // json j2 = event2;
-    // std::cout << j2 << std::endl;
-    // const auto event22 = j2.get<trade_event::DepthUpdateEvent>();
+    const std::vector<trade_event::OrderUpdateInfoCPtr> bid_info = {
+        std::make_shared<const trade_event::OrderUpdateInfo>(
+            utils::Price4("10.01"), 0, trade_event::trade_action::delete_delete
+        ),
+        std::make_shared<const trade_event::OrderUpdateInfo>(
+            utils::Price4("10.00"), 0, trade_event::trade_action::delete_delete
+        )
+    };
+    const std::vector<trade_event::OrderUpdateInfoCPtr> ask_info = {
+         std::make_shared<const trade_event::OrderUpdateInfo>(
+            utils::Price4("10.00"), 200, trade_event::trade_action::add_add
+        )
+    };
+    const trade_event::DepthUpdateEvent event2(bid_info, ask_info);
+    json j2 = event2;
+    std::cout << j2 << std::endl;
+    const auto event22 = j2.get<trade_event::DepthUpdateEvent>();
+
+    const trade_event::EventBaseCPtr p_event = std::make_shared<trade_event::DepthUpdateEvent>(event2);
+    //json j_p = p_event;
+    std::cout << "pointer to_json: " << p_event->to_json() << std::endl;
+
+    // test order book
+
 
     return 0;
 }

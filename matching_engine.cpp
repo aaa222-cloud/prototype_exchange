@@ -111,4 +111,23 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::match_order(order::Order
     return msgs;
 }
 
+std::vector<std::string> MatchingEngine::eod_cleanup()
+{
+    // count number of orders in 1st round (upper bound as some are day order)
+    size_t num_orders = 0;
+    for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
+    {
+        num_orders += it->second->number_of_valid_orders();
+    }
+    std::vector<std::string> remaining_orders; remaining_orders.reserve(num_orders);
+    for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
+    {
+        const auto& curr_book = it->second;
+        const auto eod_orders = curr_book->get_eod_orders();
+        remaining_orders.insert(remaining_orders.begin(), eod_orders.begin(), eod_orders.end());
+    }
+
+    return remaining_orders;
+}
+
 } // namespace exchange

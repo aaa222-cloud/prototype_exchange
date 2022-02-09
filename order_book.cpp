@@ -1,8 +1,11 @@
+#include <nlohmann/json.hpp>
 #include "order_book.hpp"
 #include "price4.hpp"
 
 namespace order
 {
+
+using json = nlohmann::json;
 
 // to do : need better error message and exception handling
 void OrderBook::initialise(const std::vector<LimitOrderPtr>& orders)
@@ -142,9 +145,15 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
     std::vector<trade_event::EventBaseCPtr> events; events.reserve(2);
     std::vector<trade_event::OrderUpdateInfoCPtr> updates; updates.reserve(order_queue_.size());
     
-    while (o->quantity() > 0 && !order_queue_.empty() && order_crossed(o))
+
+    while (o->quantity() > 0 && !order_queue_.empty())
     {
         auto& target_o = order_queue_.top();
+        // if order not valid, skip it
+        if (!valid_ids_.count(target_o->order_id())) continue;
+        // if the best order not cross, stop iteration
+        if (!order_crossed(o)) break;
+
         const int full_filled_quantity = std::min(target_o->quantity(), o->quantity());
         
         o->reduce_quantity(full_filled_quantity);
@@ -177,6 +186,24 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
     }
     // note: unfilled limit order will be inserted to other order book - handle outside
     return events;
+}
+
+std::vector<std::string> OrderBook::get_eod_orders()
+{
+    std::vector<std::string> orders; 
+    orders.reserve(valid_ids_.size());
+
+    while (!order_queue_.empty())
+    {
+        const auto& curr_o = order_queue_.top();
+        if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids_.count(curr_o->order_id()))
+        {
+            json j = curr_o;
+            orders.emplace_back(j.dump());
+        }
+        order_queue_.pop();
+    }
+    return orders;
 }
 
 } // namespace order

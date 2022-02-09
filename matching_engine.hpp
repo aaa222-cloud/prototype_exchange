@@ -28,7 +28,7 @@ public:
     std::vector<trade_event::EventBaseCPtr> process_order(const std::string& s);
     std::vector<trade_event::EventBaseCPtr> process_order(order::OrderBasePtr& o);
 
-    std::vector<std::string> eod_scan() const;
+    std::vector<std::string> eod_cleanup();
 
 private:
     void initialise(const std::vector<order::OrderBaseCPtr>& orders);

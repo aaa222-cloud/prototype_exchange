@@ -9,6 +9,9 @@
 
 namespace trade_event
 {
+
+using json = nlohmann::json;
+
 enum trade_action
 {
     add_add,
@@ -57,6 +60,7 @@ typedef std::shared_ptr<DepthUpdateEvent> DepthUpdateEventPtr;
 typedef std::shared_ptr<const DepthUpdateEvent> DepthUpdateEventCPtr;
 
 // to do: think about the inheritance structure - kinda wierd...
+// need virtual to_json() function
 class EventBase
 {
 public:
@@ -64,6 +68,10 @@ public:
     EventBase(trade_event::trade_type type) : type_(type) {};
 
     trade_event::trade_type type() const { return type_; }
+    virtual json to_json() const 
+    { 
+        return json(*this);
+    }
 
 private:
     // function for serialise
@@ -91,6 +99,11 @@ public:
 
     utils::Price4 price() const { return price_; }
     int quantity() const { return quantity_; }
+
+    virtual json to_json() const override
+    { 
+        return json(*this);
+    }
 
 private:
     // function for serialise
@@ -160,6 +173,11 @@ public:
     }
 
     void add(const OrderUpdateInfoCPtr& new_info, order::order_side side);
+
+    virtual json to_json() const override
+    { 
+        return json(*this);
+    }
 
 private:
     // function for serialise

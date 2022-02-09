@@ -28,6 +28,13 @@ public:
     // one may match LimitOrder, MarketOrder etc. If limit order, there can be unfilled part left
     std::vector<trade_event::EventBaseCPtr> match_order(const OrderBasePtr& o);
 
+    size_t number_of_valid_orders() const { return valid_ids_.size(); }
+    // make sense ?
+    const std::priority_queue<LimitOrderPtr>& order_queue() const { return order_queue_; }
+    const std::unordered_set<int>& valid_ids() const { return valid_ids_; }
+    // not const function because all orders are poped out
+    std::vector<std::string> get_eod_orders();
+
 private:
     void initialise(const std::vector<LimitOrderPtr>& orders);
     bool order_crossed(const OrderBaseCPtr& o) const;
