@@ -98,15 +98,15 @@ int main(int, char**) {
     const auto event12 = j1.get<trade_event::TradeEvent>();
 
     const std::vector<trade_event::OrderUpdateInfoCPtr> bid_info = {
-        std::make_shared<const trade_event::OrderUpdateInfo>(
+        std::make_unique<const trade_event::OrderUpdateInfo>(
             utils::Price4("10.01"), 0, trade_event::trade_action::delete_delete
         ),
-        std::make_shared<const trade_event::OrderUpdateInfo>(
+        std::make_unique<const trade_event::OrderUpdateInfo>(
             utils::Price4("10.00"), 0, trade_event::trade_action::delete_delete
         )
     };
     const std::vector<trade_event::OrderUpdateInfoCPtr> ask_info = {
-         std::make_shared<const trade_event::OrderUpdateInfo>(
+         std::make_unique<const trade_event::OrderUpdateInfo>(
             utils::Price4("10.00"), 200, trade_event::trade_action::add_add
         )
     };
@@ -115,7 +115,7 @@ int main(int, char**) {
     std::cout << j2 << std::endl;
     const auto event22 = j2.get<trade_event::DepthUpdateEvent>();
 
-    const trade_event::EventBaseCPtr p_event = std::make_shared<trade_event::DepthUpdateEvent>(event2);
+    const trade_event::EventBaseCPtr p_event = std::make_unique<trade_event::DepthUpdateEvent>(event2);
     //json j_p = p_event;
     std::cout << "pointer to_json: " << p_event->to_json() << std::endl;
 

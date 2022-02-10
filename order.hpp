@@ -9,6 +9,8 @@
 
 namespace order
 {
+    using json = nlohmann::json;
+
     enum order_type
     {
         market,
@@ -71,6 +73,32 @@ namespace order
         }
     )
 
+// smart pointers
+class OrderBase;
+class LimitOrder;
+class MarketOrder;
+class IcebergOrder;
+
+typedef std::shared_ptr<OrderBase> OrderBasePtr;
+typedef std::shared_ptr<const OrderBase> OrderBaseCPtr;
+typedef std::unique_ptr<OrderBase> OrderBaseUPtr;
+typedef std::unique_ptr<const OrderBase> OrderBaseCUPtr;
+
+typedef std::shared_ptr<LimitOrder> LimitOrderPtr;
+typedef std::shared_ptr<const LimitOrder> LimitOrderCPtr;
+typedef std::unique_ptr<LimitOrder> LimitOrderUPtr;
+typedef std::unique_ptr<const LimitOrder> LimitOrderCUPtr;
+
+typedef std::shared_ptr<MarketOrder> MarketOrderPtr;
+typedef std::shared_ptr<const MarketOrder> MarketOrderCPtr;
+typedef std::unique_ptr<MarketOrder> MarketOrderUPtr;
+typedef std::unique_ptr<const MarketOrder> MarketOrderCUPtr;
+
+typedef std::shared_ptr<IcebergOrder> IcebergOrderPtr;
+typedef std::shared_ptr<const IcebergOrder> IcebergOrderCPtr;
+typedef std::unique_ptr<IcebergOrder> IcebergOrderUPtr;
+typedef std::unique_ptr<const IcebergOrder> IcebergOrderCUPtr;
+
 class OrderBase
 {
 public:
@@ -96,6 +124,7 @@ public:
     // should be pure virtual - use this way for serialisation issue
     virtual order::order_type order_type() const { return order::order_type::unknown; };
     virtual int reduce_quantity(int filled_quantity);
+    virtual json to_json() const { return json(*this); }
 
     int time() const { return time_; }
     int order_id() const { return order_id_; }
@@ -143,6 +172,7 @@ public:
 
     order::order_type order_type() const override { return order::order_type::limit; }
     const utils::Price4& limit_price() const { return limit_price_; }
+    json to_json() const override { return json(*this); }
     
     bool operator==(const LimitOrder& a) const;
 
@@ -175,6 +205,8 @@ public:
     virtual ~MarketOrder() {}
 
     order::order_type order_type() const override { return order::order_type::market; }
+    json to_json() const override { return json(*this); }
+
     bool operator==(const MarketOrder& a) const;
 
 private:
@@ -209,6 +241,8 @@ public:
     int display_quantity() const { return display_quantity_; }
     int hidden_quantity() const { return hidden_quantity_; }
 
+    json to_json() const override { return json(*this); }
+
     bool operator==(const IcebergOrder& a) const;
 
 private:
@@ -223,19 +257,6 @@ private:
     int display_quantity_;
     int hidden_quantity_;
 };
-
-// smart pointers
-typedef std::shared_ptr<OrderBase> OrderBasePtr;
-typedef std::shared_ptr<const OrderBase> OrderBaseCPtr;
-
-typedef std::shared_ptr<LimitOrder> LimitOrderPtr;
-typedef std::shared_ptr<const LimitOrder> LimitOrderCPtr;
-
-typedef std::shared_ptr<MarketOrder> MarketOrderPtr;
-typedef std::shared_ptr<const MarketOrder> MarketOrderCPtr;
-
-typedef std::shared_ptr<IcebergOrder> IcebergOrderPtr;
-typedef std::shared_ptr<const IcebergOrder> IcebergOrderCPtr;
 
 // function for serialisation
 template <typename BasicJsonType>

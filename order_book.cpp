@@ -45,7 +45,7 @@ trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
 
     if (valid_ids_.count(o->order_id()))
     {
-        return std::make_shared<trade_event::DepthUpdateEvent>(
+        return std::make_unique<trade_event::DepthUpdateEvent>(
             std::vector<trade_event::OrderUpdateInfoCPtr>(),
             std::vector<trade_event::OrderUpdateInfoCPtr>()
         );
@@ -57,7 +57,7 @@ trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
     std::vector<trade_event::OrderUpdateInfoCPtr> bid_update;
     std::vector<trade_event::OrderUpdateInfoCPtr> ask_update;
 
-    trade_event::OrderUpdateInfoCPtr update = std::make_shared<trade_event::OrderUpdateInfo>(
+    trade_event::OrderUpdateInfoCPtr update = std::make_unique<trade_event::OrderUpdateInfo>(
         o->limit_price(), o->quantity(), trade_event::trade_action::add_add);
 
     switch (side_)
@@ -74,7 +74,7 @@ trade_event::EventBaseCPtr OrderBook::insert_order(const LimitOrderPtr& o)
         break;
     }
 
-    return std::make_shared<trade_event::DepthUpdateEvent>(bid_update, ask_update);
+    return std::make_unique<trade_event::DepthUpdateEvent>(bid_update, ask_update);
 }
 
 trade_event::EventBaseCPtr OrderBook::cancel_order(int order_id)
@@ -110,9 +110,9 @@ trade_event::EventBaseCPtr OrderBook::cancel_order(int order_id)
 
     if (side_ == order_side::bid)
     {
-        return std::make_shared<trade_event::DepthUpdateEvent>(updates, std::vector<trade_event::OrderUpdateInfoCPtr>());
+        return std::make_unique<trade_event::DepthUpdateEvent>(updates, std::vector<trade_event::OrderUpdateInfoCPtr>());
     }
-    return std::make_shared<trade_event::DepthUpdateEvent>(std::vector<trade_event::OrderUpdateInfoCPtr>(), updates);
+    return std::make_unique<trade_event::DepthUpdateEvent>(std::vector<trade_event::OrderUpdateInfoCPtr>(), updates);
 }
 
 bool OrderBook::order_crossed(const OrderBaseCPtr& o) const
@@ -145,32 +145,36 @@ std::vector<trade_event::EventBaseCPtr> OrderBook::match_order(const OrderBasePt
     std::vector<trade_event::EventBaseCPtr> events; events.reserve(2);
     std::vector<trade_event::OrderUpdateInfoCPtr> updates; updates.reserve(order_queue_.size());
     
-
     while (o->quantity() > 0 && !order_queue_.empty())
     {
-        auto& target_o = order_queue_.top();
+        const auto& target_o = order_queue_.top();
         // if order not valid, skip it
-        if (!valid_ids_.count(target_o->order_id())) continue;
+        if (!valid_ids_.count(target_o->order_id()))
+        {
+            order_queue_.pop();
+            continue;
+        }
         // if the best order not cross, stop iteration
         if (!order_crossed(o)) break;
 
         const int full_filled_quantity = std::min(target_o->quantity(), o->quantity());
-        
         o->reduce_quantity(full_filled_quantity);
         target_o->reduce_quantity(full_filled_quantity);
         
         events.emplace_back(
-            std::make_shared<trade_event::TradeEvent>(target_o->limit_price(), full_filled_quantity)
-        );
-        updates.emplace_back(
-            std::make_shared<trade_event::OrderUpdateInfo>(
-            target_o->limit_price(), full_filled_quantity, trade_event::trade_action::add_add)
+            std::make_unique<trade_event::TradeEvent>(target_o->limit_price(), full_filled_quantity)
         );
 
+        trade_event::trade_action action = trade_event::trade_action::modify;
         if (target_o->quantity() == 0)
         {
+            action = trade_event::trade_action::delete_delete;
             order_queue_.pop();
         }
+        
+        updates.emplace_back(
+            std::make_unique<trade_event::OrderUpdateInfo>(target_o->limit_price(), full_filled_quantity, action)
+        );
     }
 
     if (side_ == order_side::bid)
@@ -198,8 +202,7 @@ std::vector<std::string> OrderBook::get_eod_orders()
         const auto& curr_o = order_queue_.top();
         if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids_.count(curr_o->order_id()))
         {
-            json j = curr_o;
-            orders.emplace_back(j.dump());
+            orders.emplace_back(json(curr_o).dump());
         }
         order_queue_.pop();
     }

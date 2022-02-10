@@ -11,8 +11,8 @@
 namespace order
 {
 class OrderBook;
-typedef std::shared_ptr<OrderBook> OrderBookPtr;
-typedef std::shared_ptr<const OrderBook> OrderBookCPtr;
+typedef std::unique_ptr<OrderBook> OrderBookPtr;
+typedef std::unique_ptr<const OrderBook> OrderBookCPtr;
 
 class OrderBook
 {

@@ -8,16 +8,19 @@
 namespace exchange
 {
 
-using json = nlohmann::json;
-
 inline std::string create_book_key(stock::stock_symbol symbol, order::order_side side)
 {
     return std::to_string(symbol) + "&" + std::to_string(side);
 }
 
-inline bool order_valid(order::OrderBasePtr& o)
+bool MatchingEngine::validate_order(const order::OrderBasePtr& o)
 {
     return o->quantity() > 0;
+}
+
+bool MatchingEngine::validate_order(const std::string& o)
+{
+    json j = json::parse(o);
 }
 
 std::vector<trade_event::EventBaseCPtr> MatchingEngine::insert_order(order::LimitOrderPtr& o)
@@ -25,7 +28,7 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::insert_order(order::Limi
     const auto& order_book_key = create_book_key(o->symbol(), o->side());
     if (!order_books_.count(order_book_key))
     {
-        order_books_[order_book_key] = std::make_shared<order::OrderBook>(
+        order_books_[order_book_key] = std::make_unique<order::OrderBook>(
             o->side(), std::vector<order::LimitOrderPtr>()
         );
     }
@@ -35,11 +38,16 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::insert_order(order::Limi
 }
 
 MatchingEngine::MatchingEngine(
-    const std::vector<order::LimitOrderPtr>& orders
+    const std::vector<order::LimitOrderPtr>& orders,
+    const size_rules::TickSizeRulesCPtr& ticker_size_rules,
+    const size_rules::LotSizeRulesCPtr& lot_size_rules
 )
+:
+ticker_size_rules_(ticker_size_rules),
+lot_size_rules_(lot_size_rules)
 {
     // it is not pointer to const object because the orders are not copied
-    for (auto o : orders)
+    for (const auto o : orders)
     {
         const bool is_limit_order = (o->order_type() == order::order_type::limit || 
             o->order_type() == order::order_type::iceberg);
@@ -50,14 +58,21 @@ MatchingEngine::MatchingEngine(
     }
 }
 
-MatchingEngine::MatchingEngine(const std::vector<std::string>& orders)
+MatchingEngine::MatchingEngine(
+    const std::vector<std::string>& orders,
+    const size_rules::TickSizeRulesCPtr& ticker_size_rules,
+    const size_rules::LotSizeRulesCPtr& lot_size_rules
+)
+:
+ticker_size_rules_(ticker_size_rules),
+lot_size_rules_(lot_size_rules)
 {
     for (const auto& s : orders)
     {
         const auto j = json::parse(s);
         try
         {
-            auto o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
+            auto o = std::make_unique<order::LimitOrder>(j.get<order::LimitOrder>());
             insert_order(o);
         }
         catch(const std::exception& e)
@@ -104,7 +119,7 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::match_order(order::Order
     if (o->quantity() > 0 && o->order_type() != order::order_type::market)
     {
         // think about const here
-        auto limit_o = std::dynamic_pointer_cast<order::LimitOrder>(o);
+        auto limit_o = dynamic_cast<order::LimitOrder&>(*o);
         const auto msg = insert_order(limit_o);
         msgs.insert(msgs.begin(), msg.begin(), msg.end());
     }
