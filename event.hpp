@@ -47,17 +47,17 @@ class TradeEvent;
 class DepthUpdateEvent;
 class OrderUpdateInfo;
 
-typedef std::unique_ptr<EventBase> EventBasePtr;
-typedef std::unique_ptr<const EventBase> EventBaseCPtr;
+typedef std::shared_ptr<EventBase> EventBasePtr;
+typedef std::shared_ptr<const EventBase> EventBaseCPtr;
 
-typedef std::unique_ptr<TradeEvent> TradeEventPtr;
-typedef std::unique_ptr<const TradeEvent> TradeEventCPtr;
+typedef std::shared_ptr<TradeEvent> TradeEventPtr;
+typedef std::shared_ptr<const TradeEvent> TradeEventCPtr;
 
-typedef std::unique_ptr<OrderUpdateInfo> OrderUpdateInfoPtr;
-typedef std::unique_ptr<const OrderUpdateInfo> OrderUpdateInfoCPtr;
+typedef std::shared_ptr<OrderUpdateInfo> OrderUpdateInfoPtr;
+typedef std::shared_ptr<const OrderUpdateInfo> OrderUpdateInfoCPtr;
 
-typedef std::unique_ptr<DepthUpdateEvent> DepthUpdateEventPtr;
-typedef std::unique_ptr<const DepthUpdateEvent> DepthUpdateEventCPtr;
+typedef std::shared_ptr<DepthUpdateEvent> DepthUpdateEventPtr;
+typedef std::shared_ptr<const DepthUpdateEvent> DepthUpdateEventCPtr;
 
 // to do: think about the inheritance structure - kinda wierd...
 // need virtual to_json() function

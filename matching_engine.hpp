@@ -15,11 +15,16 @@
 #include "order_book.hpp"
 #include "size_rules.hpp"
 #include "stock.hpp"
+#include "ticker_rules.hpp"
 
 namespace exchange
 {
 
 using json = nlohmann::json;
+
+class MatchingEngine;
+typedef std::unique_ptr<MatchingEngine> MatchingEnginePtr;
+typedef std::unique_ptr<const MatchingEngine> MatchingEngineCPtr;
 
 class MatchingEngine
 {
@@ -28,16 +33,18 @@ public:
     MatchingEngine(
         const std::vector<order::LimitOrderPtr>& orders,
         const size_rules::TickSizeRulesCPtr& ticker_size_rules,
-        const size_rules::LotSizeRulesCPtr& lot_size_rules
+        const size_rules::LotSizeRulesCPtr& lot_size_rules,
+        const ticker_rules::TickerRulesCPtr& ticker_rules
     );
     MatchingEngine(
         const std::vector<std::string>& orders,
         const size_rules::TickSizeRulesCPtr& ticker_size_rules,
-        const size_rules::LotSizeRulesCPtr& lot_size_rules
+        const size_rules::LotSizeRulesCPtr& lot_size_rules,
+        const ticker_rules::TickerRulesCPtr& ticker_rules
     );
 
-    bool validate_order(const std::string& o);
-    bool validate_order(const order::OrderBasePtr& o);
+    bool validate_order(const std::string& o) const;
+    bool validate_order(const order::OrderBasePtr& o) const;
     std::vector<trade_event::EventBaseCPtr> process_order(const std::string& s);
     std::vector<trade_event::EventBaseCPtr> process_order(order::OrderBasePtr& o);
 
@@ -55,6 +62,7 @@ private:
     // pointers to size rules
     size_rules::TickSizeRulesCPtr ticker_size_rules_;
     size_rules::LotSizeRulesCPtr lot_size_rules_;
+    ticker_rules::TickerRulesCPtr ticker_rules_;
 };
 
 } // namespace exchange

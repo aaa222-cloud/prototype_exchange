@@ -9,6 +9,10 @@
 namespace exchange
 {
 
+class MarketDataPublisher;
+typedef std::unique_ptr<MarketDataPublisher> MarketDataPublisherPtr;
+typedef std::unique_ptr<const MarketDataPublisher> MarketDataPublisherCPtr;
+
 class MarketDataPublisher
 {
 public:

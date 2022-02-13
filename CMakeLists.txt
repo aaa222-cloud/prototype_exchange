@@ -21,6 +21,8 @@ set(All_SRCS
     ${PROJECT_SOURCE_DIR}/size_rules.cpp
     ${PROJECT_SOURCE_DIR}/stock.hpp 
     ${PROJECT_SOURCE_DIR}/stock.cpp
+    ${PROJECT_SOURCE_DIR}/ticker_rules.hpp
+    ${PROJECT_SOURCE_DIR}/ticker_rules.cpp
 )
 add_executable(exchange ${All_SRCS})
 

@@ -155,6 +155,7 @@ public:
     SizeRulesBase(const std::vector<T>& size_rules);
 
     typename T::size_step_type find_size(const utils::Price4& price) const;
+    bool has_rules() const { return !size_rules.empty(); }
 
 private:
     // function for serialise

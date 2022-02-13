@@ -5,6 +5,7 @@
 
 namespace stock
 {
+    // it is not good to hardcoded this
     enum stock_symbol
     {
         AAPL,

@@ -258,6 +258,12 @@ private:
     int hidden_quantity_;
 };
 
+// order factory
+class OrderFactory
+{
+
+};
+
 // function for serialisation
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const OrderBase& o)
