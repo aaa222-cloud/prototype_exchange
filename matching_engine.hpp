@@ -30,19 +30,6 @@ class MatchingEngine
 {
 public:
     MatchingEngine() = default;
-    // MatchingEngine(
-    //     const std::vector<order::LimitOrderPtr>& orders,
-    //     const size_rules::TickSizeRulesCPtr& ticker_size_rules,
-    //     const size_rules::LotSizeRulesCPtr& lot_size_rules,
-    //     const ticker_rules::TickerRulesCPtr& ticker_rules
-    // );
-    // MatchingEngine(
-    //     const std::vector<std::string>& orders,
-    //     const size_rules::TickSizeRulesCPtr& ticker_size_rules,
-    //     const size_rules::LotSizeRulesCPtr& lot_size_rules,
-    //     const ticker_rules::TickerRulesCPtr& ticker_rules
-    // );
-
     MatchingEngine(
         const size_rules::TickSizeRulesCPtr& ticker_size_rules,
         const size_rules::LotSizeRulesCPtr& lot_size_rules,

@@ -67,7 +67,7 @@ public:
     EventBase() = default;
     EventBase(trade_event::trade_type type) : type_(type) {};
 
-    // to do: make type() virtual
+    // type() is non-virtual for serialisation purpose
     trade_event::trade_type type() const { return type_; }
     virtual json to_json() const 
     { 
