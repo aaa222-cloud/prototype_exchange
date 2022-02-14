@@ -34,9 +34,10 @@ public:
 private:
     void initialise(
         const std::string& config_file, 
-        const std::string& event_publish_file,
-        const std::string& close_order_cache_file
+        const std::string& event_publish_file
     );
+
+    std::string close_order_cache_file_;
 
     // pointers to size rules
     size_rules::TickSizeRulesCPtr ticker_size_rules_;
@@ -44,7 +45,7 @@ private:
     ticker_rules::TickerRulesCPtr ticker_rules_;
 
     // pointer to matching engine
-    MatchingEnginePtr engine_;
+    MatchingEnginePtr matching_engine_;
     // pointer to market data publisher
     MarketDataPublisherCPtr market_data_publisher_;
     

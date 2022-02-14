@@ -112,4 +112,22 @@ bool IcebergOrder::operator==(const IcebergOrder& a) const
     hidden_quantity_ == a.hidden_quantity_ && OrderBase::operator==(a));
 }
 
+OrderBasePtr OrderFactory::create(const json& j)
+{
+    if (j.contains("limit_price"))
+    {
+        // limit order or iceberg order
+        if (j.contains("hidden_quantity"))
+        {
+            return std::make_shared<IcebergOrder>(j.get<IcebergOrder>());
+        }
+        else
+        {
+            return std::make_shared<LimitOrder>(j.get<LimitOrder>());
+        }
+    }
+    
+    return std::make_shared<MarketOrder>(j.get<MarketOrder>());
+}
+
 } // namespace order

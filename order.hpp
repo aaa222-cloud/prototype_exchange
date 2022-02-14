@@ -261,7 +261,8 @@ private:
 // order factory
 class OrderFactory
 {
-
+public:
+    static OrderBasePtr create(const json& j);
 };
 
 // function for serialisation

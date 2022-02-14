@@ -30,28 +30,37 @@ class MatchingEngine
 {
 public:
     MatchingEngine() = default;
+    // MatchingEngine(
+    //     const std::vector<order::LimitOrderPtr>& orders,
+    //     const size_rules::TickSizeRulesCPtr& ticker_size_rules,
+    //     const size_rules::LotSizeRulesCPtr& lot_size_rules,
+    //     const ticker_rules::TickerRulesCPtr& ticker_rules
+    // );
+    // MatchingEngine(
+    //     const std::vector<std::string>& orders,
+    //     const size_rules::TickSizeRulesCPtr& ticker_size_rules,
+    //     const size_rules::LotSizeRulesCPtr& lot_size_rules,
+    //     const ticker_rules::TickerRulesCPtr& ticker_rules
+    // );
+
     MatchingEngine(
-        const std::vector<order::LimitOrderPtr>& orders,
-        const size_rules::TickSizeRulesCPtr& ticker_size_rules,
-        const size_rules::LotSizeRulesCPtr& lot_size_rules,
-        const ticker_rules::TickerRulesCPtr& ticker_rules
-    );
-    MatchingEngine(
-        const std::vector<std::string>& orders,
         const size_rules::TickSizeRulesCPtr& ticker_size_rules,
         const size_rules::LotSizeRulesCPtr& lot_size_rules,
         const ticker_rules::TickerRulesCPtr& ticker_rules
     );
 
-    bool validate_order(const std::string& o) const;
-    bool validate_order(const order::OrderBasePtr& o) const;
     std::vector<trade_event::EventBaseCPtr> process_order(const std::string& s);
     std::vector<trade_event::EventBaseCPtr> process_order(order::OrderBasePtr& o);
 
-    std::vector<std::string> eod_cleanup();
+    void prev_open_setup(const std::string& close_order_cache_file);
+    void eod_cleanup(const std::string& close_order_cache_file);
 
 private:
     void initialise(const std::vector<order::OrderBaseCPtr>& orders);
+
+    bool validate_order(const json& j) const;
+    bool validate_order(const std::string& o) const;
+    bool validate_order(const order::OrderBasePtr& o) const;
 
     std::vector<trade_event::EventBaseCPtr> cancel_order(int order_id);
     std::vector<trade_event::EventBaseCPtr> insert_order(order::LimitOrderPtr& o);
