@@ -55,7 +55,7 @@ bool MatchingEngine::validate_order(const json& j) const
 
 bool MatchingEngine::validate_order(const std::string& o) const
 {
-    auto j = json::parse(o + "_json");
+    auto j = json::parse(o);
     return validate_order(j);
 }
 
@@ -161,7 +161,7 @@ void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
 
         for (const auto& s : orders)
         {
-            const auto j = json::parse(s + "_json");
+            const auto j = json::parse(s);
             try
             {
                 auto o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
@@ -186,8 +186,8 @@ void update_events(
     }
     if (events.back()->type() == trade_event::trade_type::depth_update)
     {
-        trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast< trade_event::DepthUpdateEvent>(events.back());
-        const trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast< trade_event::DepthUpdateEvent>(insertion_event[0]);
+        trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(events.back());
+        const trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
         if ((!tail_event->bid_order_update_info().empty() && !new_event->bid_order_update_info().empty()) ||
             (!tail_event->ask_order_update_info().empty() && !new_event->ask_order_update_info().empty())
         )
@@ -212,7 +212,7 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::process_order(const std:
     std::vector<trade_event::EventBaseCPtr> events;
     try
     {
-        json j = json::parse(s + "_json");
+        json j = json::parse(s);
 
         if (j.contains("type"))
         {
@@ -238,6 +238,8 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::process_order(const std:
     {
         std::cout << e.what() << std::endl;
     }
+
+    return events;
 }
 
 } // namespace exchange

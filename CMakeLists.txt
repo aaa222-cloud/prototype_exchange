@@ -6,10 +6,14 @@ enable_testing()
 
 set(All_SRCS
     ${PROJECT_SOURCE_DIR}/main.cpp
+    ${PROJECT_SOURCE_DIR}/market_data_publisher.hpp
+    ${PROJECT_SOURCE_DIR}/market_data_publisher.cpp
     ${PROJECT_SOURCE_DIR}/matching_engine.hpp
     ${PROJECT_SOURCE_DIR}/matching_engine.cpp
     ${PROJECT_SOURCE_DIR}/event.hpp
     ${PROJECT_SOURCE_DIR}/event.cpp
+    ${PROJECT_SOURCE_DIR}/exchange.hpp
+    ${PROJECT_SOURCE_DIR}/exchange.cpp
     ${PROJECT_SOURCE_DIR}/order.hpp
     ${PROJECT_SOURCE_DIR}/order.cpp
     ${PROJECT_SOURCE_DIR}/order_book.hpp

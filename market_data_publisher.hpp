@@ -24,7 +24,7 @@ public:
     market_data_state_file_(market_data_state_file)
     {}
 
-    void publish(const std:vector<trade_event::EventBaseCPtr>& events) const;
+    void publish(const std::vector<trade_event::EventBaseCPtr>& events) const;
     // write to standard output for test purpose
     std::ostream& publish(std::ostream& os, const std::vector<trade_event::EventBaseCPtr>& events) const;
 

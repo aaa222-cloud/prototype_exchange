@@ -14,7 +14,7 @@ namespace exchange
         return os;
     }
 
-void MarketDataPublisher::publish(const std:vector<trade_event::EventBaseCPtr>& events) const
+void MarketDataPublisher::publish(const std::vector<trade_event::EventBaseCPtr>& events) const
 {
     std::ofstream f(market_data_state_file_, std::ios::app);
     for (const auto& e : events)

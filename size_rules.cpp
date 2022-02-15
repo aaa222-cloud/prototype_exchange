@@ -12,7 +12,7 @@ SizeRulesBase<SingleTickSizeRule>(size_rules)
 
 bool TickSizeRules::is_valid(const utils::Price4& price) const
 {
-    if (!has_rules) { return true; }
+    if (!has_rules()) { return true; }
     const auto tick_size = find_size(price);
     const bool valid = (price.unscaled() % tick_size.unscaled() == 0);
     return valid;
@@ -27,7 +27,7 @@ SizeRulesBase<SingleLotSizeRule>(size_rules)
 
 size_rules::lot_types LotSizeRules::lot_type(const utils::Price4& price, int lot) const
 {
-    if (!has_rules) { return size_rules::mixed_lot; }
+    if (!has_rules()) { return size_rules::mixed_lot; }
 
     const int step_size = find_size(price);
     if (lot < step_size)

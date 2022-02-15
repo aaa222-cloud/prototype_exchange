@@ -1,5 +1,6 @@
 #include <iostream>
 #include "event.hpp"
+#include "exchange.hpp"
 #include "price4.hpp"
 #include "order.hpp"
 #include "stock.hpp"
@@ -127,8 +128,20 @@ int main(int, char**) {
     // std::cout << j << std::endl;
     // const auto rule2 = j.get<ticker_rules::TickerRules>();
 
-    // test order book
+    // test config loading
+    std::string config_file = "D:/study/cpp/exchange/financial_exchange/configs/config.json";
+    std::string event_publish_file = "D:/study/cpp/exchange/financial_exchange/output/events.json";
+    std::string close_order_cache_file = "D:/study/cpp/exchange/financial_exchange/output/eod_orders.json";
 
+    exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
+    e.market_open();
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1000134, \"symbol\": \"AAPL\", \"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"140.30\", \"tif\": \"good_till_cancel\"}");
+
+    // std::string s = "{ \"happy\": true, \"pi\": 3.141 }";
+    // json j = json::parse(s);
+    // std::cout << j << std::endl;
+    // std::cout << j.contains("happy") << std::endl;
 
     return 0;
 }

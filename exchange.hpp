@@ -2,13 +2,12 @@
 #define EXCHANGE_H_
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
 #include "market_data_publisher.hpp"
 #include "matching_engine.hpp"
 #include "size_rules.hpp"
-#include "ticker_rules.hppp"
+#include "ticker_rules.hpp"
 
 
 namespace exchange

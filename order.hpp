@@ -25,6 +25,7 @@ namespace order
         ask
     };
 
+    // don't need this?
     enum type
     {
         new_order,
