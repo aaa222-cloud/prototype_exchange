@@ -64,12 +64,19 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::insert_order(order::Limi
     const auto& order_book_key = create_book_key(o->symbol(), o->side());
     if (!order_books_.count(order_book_key))
     {
-        order_books_[order_book_key] = std::make_unique<order::OrderBook>(
-            o->side(), std::vector<order::LimitOrderPtr>()
-        );
+        if (o->side() == order::order_side::bid)
+        {
+            order_books_[order_book_key] = std::make_unique<order::BidOrderBook>(
+                o->side(), std::vector<order::LimitOrderPtr>());
+        }
+        else
+        {
+            order_books_[order_book_key] = std::make_unique<order::AskOrderBook>(
+                o->side(), std::vector<order::LimitOrderPtr>());
+        }
     }
 
-    const auto msg = order_books_[order_book_key]->insert_order(o);
+    auto msg = order_books_[order_book_key]->insert_order(o);
     return std::vector<trade_event::EventBaseCPtr>(1, msg);
 }
 
@@ -100,29 +107,15 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::cancel_order(int order_i
 
 std::vector<trade_event::EventBaseCPtr> MatchingEngine::match_order(order::OrderBasePtr& o)
 {
-    if (!validate_order(o))
-    {
-        return std::vector<trade_event::EventBaseCPtr>();
-    }
-
-    const order::order_side book_size = o->side() == order::order_side::bid ?
+    const order::order_side book_side = o->side() == order::order_side::bid ?
         order::order_side::ask : order::order_side::bid;
 
     std::vector<trade_event::EventBaseCPtr> msgs;
-    const std::string book_key = create_book_key(o->symbol(), o->side());
+    const std::string book_key = create_book_key(o->symbol(), book_side);
     if (order_books_.count(book_key))
     {
         auto& order_book = order_books_[book_key];
         auto msg = order_book->match_order(o);
-        msgs.insert(msgs.begin(), msg.begin(), msg.end());
-    }
-
-    // this quantity check does not work for iceberg order
-    if (o->quantity() > 0 && o->order_type() != order::order_type::market)
-    {
-        // think about const here
-        auto limit_o = std::dynamic_pointer_cast<order::LimitOrder>(o);
-        const auto msg = insert_order(limit_o);
         msgs.insert(msgs.begin(), msg.begin(), msg.end());
     }
     return msgs;
@@ -184,10 +177,11 @@ void update_events(
     {
         throw std::runtime_error("Expect insertion_event has lenght 1.");
     }
-    if (events.back()->type() == trade_event::trade_type::depth_update)
+    if (!events.empty() && events.back()->type() == trade_event::trade_type::depth_update)
     {
         trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(events.back());
-        const trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
+        // const auto new_event = dynamic_cast<const trade_event::DepthUpdateEvent&>(*insertion_event[0]);
+        trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
         if ((!tail_event->bid_order_update_info().empty() && !new_event->bid_order_update_info().empty()) ||
             (!tail_event->ask_order_update_info().empty() && !new_event->ask_order_update_info().empty())
         )
@@ -218,19 +212,22 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::process_order(const std:
         {
             if (j.at("type") == "CANCEL")
             {
-                cancel_order(j.at("order_id").template get<int>());
+                events = cancel_order(j.at("order_id").template get<int>());
             }
             else if (j.at("type") == "NEW")
             {
-                order::OrderBasePtr o = order::OrderFactory::create(j);
-                events = match_order(o);
-                // there is corner case for iceberg order
-                if (o->order_type() != order::order_type::market && o->quantity() > 0)
+                if (validate_order(j))
                 {
-                    order::LimitOrderPtr limit_o = std::dynamic_pointer_cast<order::LimitOrder>(o);
-                    auto insertion_event = insert_order(limit_o);
-                    update_events(events, insertion_event);
-                } 
+                    order::OrderBasePtr o = order::OrderFactory::create(j);
+                    events = match_order(o);
+                    // there is corner case for iceberg order
+                    if (o->order_type() != order::order_type::market && o->quantity() > 0)
+                    {
+                        order::LimitOrderPtr limit_o = std::dynamic_pointer_cast<order::LimitOrder>(o);
+                        auto insertion_event = insert_order(limit_o);
+                        update_events(events, insertion_event);
+                    }
+                }
             }
         }
     }

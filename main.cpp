@@ -136,8 +136,63 @@ int main(int, char**) {
     exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
     e.market_open();
     e.process_request(
-        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1000134, \"symbol\": \"AAPL\", \"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"140.30\", \"tif\": \"good_till_cancel\"}");
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 10, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 200, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 5, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 9, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.99\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 8, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.90\", \"tif\": \"good_till_cancel\"}"
+        );
 
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 12, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 100, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 2, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 500, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 3, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
+        );
+
+    // test matching order
+    // order #15
+    e.process_request(
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
+        "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #16
+    e.process_request(
+        "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #17
+    e.process_request(
+        "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+    );
+    // cancel order #2
+    e.process_request(
+        "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
+    );
     // std::string s = "{ \"happy\": true, \"pi\": 3.141 }";
     // json j = json::parse(s);
     // std::cout << j << std::endl;

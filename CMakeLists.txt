@@ -17,7 +17,6 @@ set(All_SRCS
     ${PROJECT_SOURCE_DIR}/order.hpp
     ${PROJECT_SOURCE_DIR}/order.cpp
     ${PROJECT_SOURCE_DIR}/order_book.hpp
-    ${PROJECT_SOURCE_DIR}/order_book.cpp
     ${PROJECT_SOURCE_DIR}/price4.hpp 
     ${PROJECT_SOURCE_DIR}/price4.cpp
     ${PROJECT_SOURCE_DIR}/serialise.hpp
