@@ -147,6 +147,7 @@ void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
     std::ifstream infile(close_order_cache_file);
     if (infile.good())
     {
+        // need to optimize - what if file much bigger than buffer
         std::stringstream buffer;
         buffer << infile.rdbuf();
         json j = json::parse(buffer.str());
