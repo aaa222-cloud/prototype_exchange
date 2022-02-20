@@ -177,7 +177,6 @@ void update_events(
         else
         {
             trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(events.back());
-            // const auto new_event = dynamic_cast<const trade_event::DepthUpdateEvent&>(*insertion_event[0]);
             trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
             if ((!tail_event->bid_order_update_info().empty() && !new_event->bid_order_update_info().empty()) ||
                 (!tail_event->ask_order_update_info().empty() && !new_event->ask_order_update_info().empty())
