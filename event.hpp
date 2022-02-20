@@ -69,6 +69,7 @@ public:
 
     // type() is non-virtual for serialisation purpose
     trade_event::trade_type type() const { return type_; }
+    virtual bool empty() const { return true; }
     virtual json to_json() const 
     { 
         return json(*this);
@@ -174,6 +175,10 @@ public:
     }
 
     void add(const OrderUpdateInfoCPtr& new_info, order::order_side side);
+    bool empty() const override 
+    { 
+        return bid_order_update_info_.empty() && ask_order_update_info_.empty(); 
+    }
 
     virtual json to_json() const override
     { 

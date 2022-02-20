@@ -180,25 +180,34 @@ void update_events(
     }
     if (!events.empty() && events.back()->type() == trade_event::trade_type::depth_update)
     {
-        trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(events.back());
-        // const auto new_event = dynamic_cast<const trade_event::DepthUpdateEvent&>(*insertion_event[0]);
-        trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
-        if ((!tail_event->bid_order_update_info().empty() && !new_event->bid_order_update_info().empty()) ||
-            (!tail_event->ask_order_update_info().empty() && !new_event->ask_order_update_info().empty())
-        )
+        if (events.back()->empty())
         {
-            throw std::runtime_error("Expect tail event and insertion event have differnt side.");
+            events.pop_back();
+            if (insertion_event[0])
+                events.push_back(insertion_event[0]);
         }
-        trade_event::EventBaseCPtr merged_event = std::make_shared<trade_event::DepthUpdateEvent>(
-            tail_event->bid_order_update_info().empty() ? new_event->bid_order_update_info() : tail_event->bid_order_update_info(),
-            tail_event->ask_order_update_info().empty() ? new_event->ask_order_update_info() : tail_event->ask_order_update_info()
-        );
-        events.pop_back();
-        events.push_back(merged_event);
+        else
+        {
+            trade_event::DepthUpdateEventCPtr tail_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(events.back());
+            // const auto new_event = dynamic_cast<const trade_event::DepthUpdateEvent&>(*insertion_event[0]);
+            trade_event::DepthUpdateEventCPtr new_event = std::dynamic_pointer_cast<const trade_event::DepthUpdateEvent>(insertion_event[0]);
+            if ((!tail_event->bid_order_update_info().empty() && !new_event->bid_order_update_info().empty()) ||
+                (!tail_event->ask_order_update_info().empty() && !new_event->ask_order_update_info().empty())
+            )
+            {
+                throw std::runtime_error("Expect tail event and insertion event have differnt side.");
+            }
+            trade_event::EventBaseCPtr merged_event = std::make_shared<trade_event::DepthUpdateEvent>(
+                tail_event->bid_order_update_info().empty() ? new_event->bid_order_update_info() : tail_event->bid_order_update_info(),
+                tail_event->ask_order_update_info().empty() ? new_event->ask_order_update_info() : tail_event->ask_order_update_info()
+            );
+            events.pop_back();
+            events.push_back(merged_event);
+        }
     }
     else
-    {
-        events.push_back(insertion_event[0]);
+    {   
+        if (insertion_event[0]) events.push_back(insertion_event[0]);
     }
 }
 

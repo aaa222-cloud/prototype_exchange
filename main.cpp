@@ -134,7 +134,7 @@ int main(int, char**) {
     std::string close_order_cache_file = "D:/study/cpp/exchange/financial_exchange/output/eod_orders.json";
 
     exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
-    e.market_open();
+    // e.market_open();
     e.process_request(
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
         "\"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"

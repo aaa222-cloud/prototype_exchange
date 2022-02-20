@@ -144,10 +144,7 @@ trade_event::EventBaseCPtr OrderBook<Comparer>::insert_order(const LimitOrderPtr
 
     if (valid_ids_.count(o->order_id()))
     {
-        return std::make_unique<trade_event::DepthUpdateEvent>(
-            std::vector<trade_event::OrderUpdateInfoCPtr>(),
-            std::vector<trade_event::OrderUpdateInfoCPtr>()
-        );
+        return nullptr;
     }
     order_queue_.push(o);
     valid_ids_.insert(o->order_id());
@@ -282,9 +279,11 @@ std::vector<trade_event::EventBaseCPtr> OrderBook<Comparer>::match_order(const O
         prev_trade_price = trade_price;
     }
 
-    events.emplace_back(
-        enssemble_depth_update_events(updates)
-    );
+    if (!updates.empty())
+    {
+        events.emplace_back(enssemble_depth_update_events(updates));
+    }
+    
     // note: unfilled limit order will be inserted to other order book - handle outside through matching engine
     return events;
 }
