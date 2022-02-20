@@ -123,39 +123,27 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::match_order(order::Order
 
 void MatchingEngine::eod_cleanup(const std::string& close_order_cache_file)
 {
-    // count number of orders in 1st round (upper bound as some are day order)
-    size_t num_orders = 0;
-    for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
-    {
-        num_orders += it->second->number_of_valid_orders();
-    }
-    std::vector<std::string> remaining_orders; remaining_orders.reserve(num_orders);
+    std::ofstream ofile(close_order_cache_file);
     for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
     {
         const auto& curr_book = it->second;
         const auto eod_orders = curr_book->get_eod_orders();
-        remaining_orders.insert(remaining_orders.begin(), eod_orders.begin(), eod_orders.end());
+        for (const auto& o : eod_orders)
+        {
+            ofile << o << "\n";
+        } 
     }
-
-    std::ofstream ofile(close_order_cache_file);
-    json j = remaining_orders;
-    ofile << j.dump();
 }
 
 void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
 {
     std::ifstream infile(close_order_cache_file);
-    if (infile.good())
+    std::string butter;
+    while (std::getline(infile, butter))
     {
-        // need to optimize - what if file much bigger than buffer
-        std::stringstream buffer;
-        buffer << infile.rdbuf();
-        json j = json::parse(buffer.str());
-        auto orders = j.get<std::vector<std::string>>();
-
-        for (const auto& s : orders)
+        if (!butter.empty())
         {
-            const auto j = json::parse(s);
+            const json j = json::parse(butter);
             try
             {
                 auto o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
@@ -164,7 +152,7 @@ void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
             catch(const std::exception& e)
             {
                 std::cerr << e.what() << '\n';
-            }   
+            }
         }
     }
 }

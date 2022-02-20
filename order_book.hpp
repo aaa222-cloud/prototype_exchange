@@ -303,6 +303,7 @@ std::vector<std::string> OrderBook<Comparer>::get_eod_orders()
         }
         order_queue_.pop();
     }
+    valid_ids_.clear();
     return orders;
 }
 

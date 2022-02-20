@@ -172,9 +172,9 @@ int main(int, char**) {
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
         "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
         );
-    //e.market_close();
-
-    //e.market_open();
+    e.market_close();
+    e.market_open();
+    
     // test matching order
     // order #15
     e.process_request(
