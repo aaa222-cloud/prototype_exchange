@@ -14,7 +14,6 @@
 #include "order.hpp"
 #include "order_book.hpp"
 #include "size_rules.hpp"
-#include "stock.hpp"
 #include "ticker_rules.hpp"
 
 namespace exchange
@@ -53,7 +52,6 @@ private:
     std::vector<trade_event::EventBaseCPtr> insert_order(order::LimitOrderPtr& o);
     std::vector<trade_event::EventBaseCPtr> match_order(order::OrderBasePtr& o);
 
-    typedef std::tuple<stock::stock_symbol, order::order_side> book_key_type;
     std::unordered_map<std::string, order::OrderBookPtr> order_books_;
     // pointers to size rules
     size_rules::TickSizeRulesCPtr ticker_size_rules_;

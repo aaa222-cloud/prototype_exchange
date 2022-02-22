@@ -3,9 +3,9 @@
 
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <string>
 #include <unordered_set>
 #include <vector>
-#include "stock.hpp"
 
 namespace ticker_rules
 {
@@ -20,9 +20,9 @@ class TickerRules
 {
 public:
     TickerRules() = default;
-    TickerRules(const std::vector<stock::stock_symbol>& tickers);
+    TickerRules(const std::vector<std::string>& tickers);
 
-    bool is_valid(stock::stock_symbol symbol) const;
+    bool is_valid(const std::string& symbol) const;
 
 private:
     // function for serialise
@@ -31,7 +31,7 @@ private:
     template <typename BasicJsonType>
     friend void from_json(const BasicJsonType& j, TickerRules& o);
 
-    std::unordered_set<stock::stock_symbol> valid_symbols_;
+    std::unordered_set<std::string> valid_symbols_;
 };
 
 template <typename BasicJsonType>
@@ -43,7 +43,7 @@ void to_json(BasicJsonType& j, const TickerRules& o)
 template <typename BasicJsonType>
 void from_json(const BasicJsonType& j, TickerRules& o)
 {
-    o = TickerRules(j.template get<std::vector<stock::stock_symbol>>());
+    o = TickerRules(j.template get<std::vector<std::string>>());
 }
 
 } // namespace ticker_rules

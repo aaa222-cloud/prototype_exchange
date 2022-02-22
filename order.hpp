@@ -5,7 +5,6 @@
 #include <nlohmann/json.hpp>
 #include <string>
 #include "price4.hpp"
-#include "stock.hpp"
 
 namespace order
 {
@@ -23,13 +22,6 @@ namespace order
     {
         bid,
         ask
-    };
-
-    // don't need this?
-    enum type
-    {
-        new_order,
-        cancel_order
     };
 
     enum time_in_force
@@ -54,14 +46,6 @@ namespace order
         {
             {bid, "buy"},
             {ask, "sell"}
-        }
-    )
-
-    NLOHMANN_JSON_SERIALIZE_ENUM(
-        type,
-        {
-            {new_order, "new"},
-            {cancel_order, "cancel"}
         }
     )
 
@@ -108,7 +92,7 @@ public:
         int time, 
         int order_id, 
         int quantity,
-        stock::stock_symbol symbol,
+        const std::string& symbol,
         order::order_side side,
         order::time_in_force tif
     ) 
@@ -116,7 +100,8 @@ public:
     time_(time), 
     order_id_(order_id),
     quantity_(quantity),
-    side_(side_),
+    symbol_(symbol),
+    side_(side),
     tif_(tif)
     {}
 
@@ -124,13 +109,14 @@ public:
 
     // should be pure virtual - use this way for serialisation issue
     virtual order::order_type order_type() const { return order::order_type::unknown; };
-    virtual int reduce_quantity(int filled_quantity);
+    int reduce_quantity(int filled_quantity);
     virtual json to_json() const { return json(*this); }
 
     int time() const { return time_; }
     int order_id() const { return order_id_; }
     int quantity() const { return quantity_; }
-    stock::stock_symbol symbol() const { return symbol_; }
+    //stock::stock_symbol symbol() const { return symbol_; }
+    std::string symbol() const { return symbol_; }
     order::order_side side() const { return side_; }
     order::time_in_force tif() const { return tif_; }
 
@@ -146,7 +132,7 @@ private:
     int time_;
     int order_id_;
     double quantity_;
-    stock::stock_symbol symbol_;
+    std::string symbol_;
     order::order_side side_;
     order::time_in_force tif_;
 };
@@ -161,7 +147,7 @@ public:
         double quantity,
         order::time_in_force tif,
         const utils::Price4& limit_price,
-        stock::stock_symbol symbol,
+        const std::string& symbol,
         order::order_side side
     ) 
     : 
@@ -199,7 +185,7 @@ public:
         int order_id,
         double quantity,
         order::time_in_force tif,
-        stock::stock_symbol symbol,
+        const std::string& symbol,
         order::order_side side
     );
 
@@ -229,7 +215,7 @@ public:
         int order_id,
         order::time_in_force tif,
         const utils::Price4& limit_price, 
-        stock::stock_symbol symbol,
+        const std::string& symbol,
         order::order_side side,
         double display_quantity,
         double hidden_quantity
@@ -238,8 +224,7 @@ public:
     virtual ~IcebergOrder() {}
 
     order::order_type order_type() const override { return order::order_type::iceberg; }
-    int reduce_quantity(int filled_quantity) override;
-    int display_quantity() const { return display_quantity_; }
+    int display_quantity() const { return quantity(); }
     int hidden_quantity() const { return hidden_quantity_; }
 
     json to_json() const override { return json(*this); }
@@ -255,7 +240,6 @@ private:
 
     void initialise();
 
-    int display_quantity_;
     int hidden_quantity_;
 };
 
@@ -315,15 +299,17 @@ template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const IcebergOrder& o)
 {
     j = static_cast<LimitOrder>(o);
-    j["display_quantity"] = o.display_quantity_;
+    j["display_quantity"] = o.display_quantity();
     j["hidden_quantity"] = o.hidden_quantity_;
+    j.erase("quantity");
 }
 
 template <typename BasicJsonType>
 void from_json(const BasicJsonType& j, IcebergOrder& o)
 {
-    nlohmann::from_json(j, static_cast<LimitOrder&>(o));
-    j.at("display_quantity").get_to(o.display_quantity_);
+    json internal_j = j;
+    internal_j["quantity"] = j["display_quantity"];
+    nlohmann::from_json(internal_j, static_cast<LimitOrder&>(o));
     j.at("hidden_quantity").get_to(o.hidden_quantity_);
 }
 

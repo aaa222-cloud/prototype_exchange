@@ -63,7 +63,9 @@ private:
 
     order_side side_;
     std::priority_queue<LimitOrderPtr, std::vector<LimitOrderPtr>, Comparer> order_queue_;
+    std::priority_queue<LimitOrderPtr, std::vector<LimitOrderPtr>, Comparer> hidden_queue_;
     std::unordered_set<int> valid_ids_;
+    std::unordered_set<int> hidden_valid_ids_;
 };
 
 template <typename Comparer>

@@ -51,7 +51,7 @@ MarketOrder::MarketOrder(
     int order_id,
     double quantity,
     order::time_in_force tif,
-    stock::stock_symbol symbol,
+    const std::string& symbol,
     order::order_side side
 )
 :
@@ -86,30 +86,21 @@ IcebergOrder::IcebergOrder(
     int order_id,
     order::time_in_force tif,
     const utils::Price4& limit_price, 
-    stock::stock_symbol symbol,
+    const std::string& symbol,
     order::order_side side,
     double display_quantity,
     double hidden_quantity
 )
 :
-LimitOrder(time, order_id, 0, tif, limit_price, symbol, side),
-display_quantity_(display_quantity),
+LimitOrder(time, order_id, display_quantity, tif, limit_price, symbol, side),
 hidden_quantity_(hidden_quantity)
 {
     initialise();
 }
 
-int IcebergOrder::reduce_quantity(int filled_quantity)
-{
-    display_quantity_ -= filled_quantity;
-    return display_quantity_;
-}
-
 bool IcebergOrder::operator==(const IcebergOrder& a) const
 {
-    return (limit_price() == a.limit_price() && symbol() == a.symbol() && 
-    side() == a.side() && display_quantity_ == a.display_quantity_ && 
-    hidden_quantity_ == a.hidden_quantity_ && OrderBase::operator==(a));
+    return hidden_quantity_ == a.hidden_quantity_ && LimitOrder::operator==(a);
 }
 
 OrderBasePtr OrderFactory::create(const json& j)

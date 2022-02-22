@@ -2,6 +2,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -13,9 +14,9 @@
 namespace exchange
 {
 
-inline std::string create_book_key(stock::stock_symbol symbol, order::order_side side)
+inline std::string create_book_key(const std::string& symbol, order::order_side side)
 {
-    return std::to_string(symbol) + "&" + std::to_string(side);
+    return symbol + "&" + std::to_string(side);
 }
 
 bool MatchingEngine::validate_order(const order::OrderBasePtr& o) const
@@ -25,7 +26,7 @@ bool MatchingEngine::validate_order(const order::OrderBasePtr& o) const
 
 bool MatchingEngine::validate_order(const json& j) const
 {
-    const stock::stock_symbol symbol = j.value("symbol", stock::stock_symbol::AAPL);
+    const std::string symbol = j.value("symbol", "AAPL");
     const int quantity = j.value("quantity", 0);
 
     // remove invalid symbol
