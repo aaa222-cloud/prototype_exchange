@@ -103,6 +103,38 @@ bool IcebergOrder::operator==(const IcebergOrder& a) const
     return hidden_quantity_ == a.hidden_quantity_ && LimitOrder::operator==(a);
 }
 
+std::vector<LimitOrderPtr> IcebergOrder::split_order() const
+{
+    LimitOrderPtr displayed_o = quantity() > 0 ? std::make_shared<LimitOrder>(
+        time(), order_id(), quantity(), tif(), limit_price(), symbol(), side()
+        ) : LimitOrderPtr();
+    LimitOrderPtr hidden_o = std::make_shared<LimitOrder>(
+        time(), order_id(), hidden_quantity_, tif(), limit_price(), symbol(), side());
+
+    return std::vector<LimitOrderPtr>{displayed_o, hidden_o};
+}
+
+int IcebergOrder::total_quantity() const
+{
+    return quantity() + hidden_quantity_;
+}
+
+int IcebergOrder::reduce_quantity(int filled_quantity)
+{
+    const int display_quantity = quantity();
+    const int short_quantity = filled_quantity - display_quantity;
+
+    if (filled_quantity <= quantity())
+    {
+        OrderBase::reduce_quantity(filled_quantity);
+    }
+    else
+    {
+        OrderBase::reduce_quantity(quantity());
+        hidden_quantity_ -= short_quantity;
+    }
+}
+
 OrderBasePtr OrderFactory::create(const json& j)
 {
     if (j.contains("limit_price"))

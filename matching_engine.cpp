@@ -27,7 +27,8 @@ bool MatchingEngine::validate_order(const order::OrderBasePtr& o) const
 bool MatchingEngine::validate_order(const json& j) const
 {
     const std::string symbol = j.value("symbol", "AAPL");
-    const int quantity = j.value("quantity", 0);
+    const int quantity = j.contains("quantity") ? j.at("quantity").get<int>() : 
+        (j.value("display_quantity", 0) + j.value("hidden_quantity", 0));
 
     // remove invalid symbol
     if (!ticker_rules_->is_valid(symbol))
@@ -35,7 +36,7 @@ bool MatchingEngine::validate_order(const json& j) const
         return false;
     }
     // remove zero quantity
-    if (j.contains("quantity") && quantity == 0)
+    if (quantity == 0)
     {
         return false;
     }
@@ -219,7 +220,7 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::process_order(const std:
                     order::OrderBasePtr o = order::OrderFactory::create(j);
                     events = match_order(o);
                     // there is corner case for iceberg order
-                    if (o->order_type() != order::order_type::market && o->quantity() > 0)
+                    if (o->order_type() != order::order_type::market && o->total_quantity() > 0)
                     {
                         order::LimitOrderPtr limit_o = std::dynamic_pointer_cast<order::LimitOrder>(o);
                         auto insertion_event = insert_order(limit_o);

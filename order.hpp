@@ -109,7 +109,8 @@ public:
 
     // should be pure virtual - use this way for serialisation issue
     virtual order::order_type order_type() const { return order::order_type::unknown; };
-    int reduce_quantity(int filled_quantity);
+    virtual int reduce_quantity(int filled_quantity);
+    virtual int total_quantity() const { return quantity_; }
     virtual json to_json() const { return json(*this); }
 
     int time() const { return time_; }
@@ -226,7 +227,10 @@ public:
     order::order_type order_type() const override { return order::order_type::iceberg; }
     int display_quantity() const { return quantity(); }
     int hidden_quantity() const { return hidden_quantity_; }
+    std::vector<LimitOrderPtr> split_order() const;
 
+    int reduce_quantity(int filled_quantity) override;
+    int total_quantity() const override;
     json to_json() const override { return json(*this); }
 
     bool operator==(const IcebergOrder& a) const;

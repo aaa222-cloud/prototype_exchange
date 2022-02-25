@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 #include "event.hpp"
 #include "exchange.hpp"
 #include "price4.hpp"
@@ -53,8 +54,10 @@ int main(int, char**) {
     // order::IcebergOrder iceberg_order(
     //     1625787615, 1000134, order::time_in_force::day, utils::Price4("139.96"),
     //     "AAPL", order::order_side::bid, 100, 200);
-    // json j = iceberg_order;
-    // std::cout << j << std::endl;
+    // // json j = iceberg_order;
+    // // std::cout << j << std::endl;
+    // const auto split_orders = iceberg_order.split_order();
+    // std::cout << "displayed order: " << json(split_orders[0]) << "\nhidden order: " << json(split_orders[1]) << std::endl;
 
     // auto iceberg_order2 = j.get<order::IcebergOrder>();
     // std::cout << (iceberg_order2 == iceberg_order) << std::endl;
@@ -127,73 +130,83 @@ int main(int, char**) {
     // std::cout << j << std::endl;
     // const auto rule2 = j.get<ticker_rules::TickerRules>();
 
+    // test unordered_map
+    // std::unordered_map<utils::Price4, int> price_levels = {{utils::Price4("139.96"), 100}, {utils::Price4("139.00"), 200}};
+    // std::cout << price_levels.at(utils::Price4("139.96")) << std::endl;
+
     // test config loading
     std::string config_file = "D:/study/cpp/exchange/financial_exchange/configs/config.json";
     std::string event_publish_file = "D:/study/cpp/exchange/financial_exchange/output/events.json";
     std::string close_order_cache_file = "D:/study/cpp/exchange/financial_exchange/output/eod_orders.json";
 
     exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
+    // simple test for iceberg order
+    // e.process_request(
+    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
+    //     "\"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+    //     );
     // e.market_open();
     e.process_request(
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
         "\"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
         );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 10, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"BUY\", \"quantity\": 200, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 5, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 9, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.99\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 8, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.90\", \"tif\": \"good_till_cancel\"}"
-    //     );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 10, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 200, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 5, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 9, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.99\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 8, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"quantity\": 500, \"limit_price\": \"9.90\", \"tif\": \"good_till_cancel\"}"
+        );
 
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 12, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 100, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 2, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 500, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 3, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
-    //     );
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
-    //     );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 12, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 100, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 2, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 500, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 3, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+        );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
+        );
     // e.market_close();
     // e.market_open();
 
-    // // test matching order
-    // // order #15
-    // e.process_request(
-    //     "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // order #16
-    // e.process_request(
-    //     "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // order #17
-    // e.process_request(
-    //     "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // cancel order #2
-    // e.process_request(
-    //     "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
-    // );
+    // test matching order
+    // order #15
+    e.process_request(
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
+        "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #16
+    e.process_request(
+        "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #17
+    e.process_request(
+        "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+    );
+    // cancel order #2
+    e.process_request(
+        "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
+    );
 
     return 0;
 }

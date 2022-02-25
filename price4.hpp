@@ -1,6 +1,7 @@
 #ifndef PRICE4_HPP_
 #define PRICE4_HPP_
 
+#include <functional>
 #include <nlohmann/json.hpp>
 #include <string>
 
@@ -55,5 +56,18 @@ void from_json(const BasicJsonType& j, Price4& p)
 }
 
 } // namespace utils
+
+namespace std
+{
+template <>
+struct hash<utils::Price4>
+{
+    size_t operator()(const utils::Price4& p) const noexcept
+    {
+        return std::hash<std::string>{}(p.to_str());
+    }
+};
+
+} // namespace std
 
 #endif
