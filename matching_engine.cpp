@@ -150,15 +150,6 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::prev_open_setup(
             const json j = json::parse(butter);
             try
             {
-                // order::LimitOrderPtr o;
-                // if (j.contains("display_quantity"))
-                // {
-                //     o = std::make_shared<order::IcebergOrder>(j.get<order::IcebergOrder>());
-                // }
-                // else
-                // {
-                //     o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
-                // }
                 order::OrderBasePtr base_o = order::OrderFactory::create(j);
                 order::LimitOrderPtr o = std::dynamic_pointer_cast<order::LimitOrder>(base_o);
                 insert_order(o);

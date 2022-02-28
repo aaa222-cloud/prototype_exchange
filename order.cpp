@@ -104,8 +104,8 @@ IcebergOrder::IcebergOrder(
 )
 :
 LimitOrder(
-    display_o->time(), display_o->order_id(), display_o->quantity(), display_o->tif(), 
-    display_o->limit_price(), display_o->symbol(), display_o->side()
+    hidden_o->time(), hidden_o->order_id(), display_o ? display_o->quantity() : 0, hidden_o->tif(), 
+    hidden_o->limit_price(), hidden_o->symbol(), hidden_o->side()
     ),
 hidden_quantity_(hidden_o->quantity())
 {

@@ -120,9 +120,12 @@ void OrderBook<Comparer>::insert_order(const LimitOrderPtr& o, int)
             const auto splitted_orders = iceberg_o->split_order();
             const auto& displayed_o = splitted_orders[0];
 
-            order_queue_.push(displayed_o);
-            valid_ids_.insert(order_id);
-            price_levels_[limit_price] += quantity;
+            if (quantity > 0)
+            {
+                order_queue_.push(displayed_o);
+                valid_ids_.insert(order_id);
+                price_levels_[limit_price] += quantity;
+            }
 
             hidden_queue_.push(splitted_orders[1]);
             hidden_valid_ids_.insert(order_id);
@@ -200,10 +203,13 @@ trade_event::EventBaseCPtr OrderBook<Comparer>::insert_order(const LimitOrderPtr
     insert_order(o, 1);
 
     std::vector<trade_event::OrderUpdateInfoCPtr> updates;
-    updates.emplace_back(
-        std::make_unique<trade_event::OrderUpdateInfo>(
-            o->limit_price(), o->quantity(), trade_event::trade_action::add_add)
-    );
+    if (o->quantity() > 0)
+    {
+        updates.emplace_back(
+            std::make_unique<trade_event::OrderUpdateInfo>(
+                o->limit_price(), o->quantity(), trade_event::trade_action::add_add)
+        );
+    } 
 
     return enssemble_depth_update_events(updates);
 }
@@ -398,47 +404,6 @@ std::vector<trade_event::EventBaseCPtr> OrderBook<Comparer>::match_order(const O
     return trade_events;
 }
 
-// namespace
-// {
-// template <typename Comparer>
-// std::vector<std::string> get_eod_orders(
-//     std::priority_queue<LimitOrderPtr, std::vector<LimitOrderPtr>, Comparer>& order_queue,
-//     std::unordered_set<int> valid_ids
-// )
-// {
-//     std::vector<std::string> orders; 
-//     orders.reserve(valid_ids.size());
-
-//     while (!order_queue.empty())
-//     {
-//         const auto& curr_o = order_queue.top();
-//         if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids.count(curr_o->order_id()))
-//         {
-//             orders.emplace_back(json(curr_o).dump());
-//         }
-//         order_queue.pop();
-//     }
-//     valid_ids.clear();
-
-//     return orders;
-// }
-// }
-
-// template <typename Comparer>
-// std::vector<std::string> OrderBook<Comparer>::get_eod_orders(bool is_hidden)
-// {
-//     std::vector<std::string> orders;
-//     if (is_hidden)
-//     {
-//         orders = get_eod_orders(hidden_queue_, hidden_valid_ids_);
-//     }
-//     else
-//     {
-//         orders = get_eod_orders(order_queue_, valid_ids_);
-//     }
-//     return orders;
-// }
-
 template <typename Comparer>
 std::vector<std::string> OrderBook<Comparer>::get_eod_orders()
 {
@@ -479,6 +444,10 @@ std::vector<std::string> OrderBook<Comparer>::get_eod_orders()
         hidden_queue_.pop();
     }
     hidden_valid_ids_.clear();
+
+    // also clear other cached information
+    price_levels_.clear();
+    order_info_.clear();
 
     return orders;
 }

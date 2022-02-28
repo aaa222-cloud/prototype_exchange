@@ -155,19 +155,19 @@ int main(int, char**) {
     std::string close_order_cache_file = "D:/study/cpp/exchange/financial_exchange/output/eod_orders.json";
 
     exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
-    // simple test for iceberg order
-    e.process_request(
-        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
-        "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
-        "\"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
-        );
     // e.market_open();
+    // simple test for iceberg order
+    // e.process_request(
+    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 0, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
+    //     "\"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+    //     );
     e.process_request(
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
         "\"side\": \"BUY\", \"quantity\": 100, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
         );
     e.process_request(
-        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 10, \"symbol\": \"AAPL\", "
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 10, \"symbol\": \"AAPL\", "
         "\"side\": \"BUY\", \"quantity\": 200, \"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
         );
     e.process_request(
@@ -199,29 +199,44 @@ int main(int, char**) {
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
         "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
         );
+    // e.market_close();
+    // e.market_open();
+
+    // test matching order
+    // comes an iceberg order - fully matched
+    // e.process_request(
+    //     "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 0, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
+    //     "\"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+    //     );
+    // comes an iceberg order - partially matched
+    e.process_request(
+        "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 0, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 800, "
+        "\"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+        );
     e.market_close();
     e.market_open();
 
-    // // test matching order
-    // // order #15
-    // e.process_request(
-    //     "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // order #16
-    // e.process_request(
-    //     "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // order #17
-    // e.process_request(
-    //     "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
-    // );
-    // // cancel order #2
-    // e.process_request(
-    //     "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
-    // );
+    // order #15
+    e.process_request(
+        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
+        "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #16
+    e.process_request(
+        "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+    );
+    // order #17
+    e.process_request(
+        "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
+        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+    );
+    // cancel order #2
+    e.process_request(
+        "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
+    );
 
     return 0;
 }
