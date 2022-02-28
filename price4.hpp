@@ -60,7 +60,7 @@ void from_json(const BasicJsonType& j, Price4& p)
 namespace std
 {
 template <>
-struct hash<utils::Price4>
+struct hash<const utils::Price4>
 {
     size_t operator()(const utils::Price4& p) const noexcept
     {

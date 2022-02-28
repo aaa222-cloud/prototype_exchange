@@ -221,6 +221,10 @@ public:
         double display_quantity,
         double hidden_quantity
     );
+    IcebergOrder(
+        const LimitOrderCPtr& display_o,
+        const LimitOrderCPtr& hidden_o
+    );
 
     virtual ~IcebergOrder() {}
 

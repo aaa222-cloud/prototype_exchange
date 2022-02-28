@@ -131,8 +131,23 @@ int main(int, char**) {
     // const auto rule2 = j.get<ticker_rules::TickerRules>();
 
     // test unordered_map
-    // std::unordered_map<utils::Price4, int> price_levels = {{utils::Price4("139.96"), 100}, {utils::Price4("139.00"), 200}};
+    // std::unordered_map<const utils::Price4, int> price_levels; // = {{utils::Price4("139.96"), 100}, {utils::Price4("139.00"), 200}};
+    // price_levels[utils::Price4("139.96")] = 100;
+    // price_levels[utils::Price4("139.00")] = 200;
     // std::cout << price_levels.at(utils::Price4("139.96")) << std::endl;
+
+    // test market snap event
+    // trade_event::MarketSnapEvent e(
+    //     order::order_side::bid, "AAPL", 
+    //     std::vector<std::pair<utils::Price4, int>>{
+    //         std::pair<utils::Price4, int>(utils::Price4("10.01"), 300), 
+    //         std::pair<utils::Price4, int>(utils::Price4("10.00"), 500), 
+    //         std::pair<utils::Price4, int>(utils::Price4("9.99"), 500), 
+    //         std::pair<utils::Price4, int>(utils::Price4("9.90"), 500)
+    //     }
+    // );
+    // json j = e;
+    // std::cout << j << std::endl;
 
     // test config loading
     std::string config_file = "D:/study/cpp/exchange/financial_exchange/configs/config.json";
@@ -141,11 +156,11 @@ int main(int, char**) {
 
     exchange::Exchange e(config_file, event_publish_file, close_order_cache_file);
     // simple test for iceberg order
-    // e.process_request(
-    //     "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
-    //     "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
-    //     "\"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
-    //     );
+    e.process_request(
+        "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
+        "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 200, "
+        "\"limit_price\": \"10.01\", \"tif\": \"good_till_cancel\"}"
+        );
     // e.market_open();
     e.process_request(
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 1, \"symbol\": \"AAPL\", "
@@ -184,29 +199,29 @@ int main(int, char**) {
         "{\"time\": 1625787615, \"type\": \"NEW\", \"order_id\": 14, \"symbol\": \"AAPL\", "
         "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.04\", \"tif\": \"good_till_cancel\"}"
         );
-    // e.market_close();
-    // e.market_open();
+    e.market_close();
+    e.market_open();
 
-    // test matching order
-    // order #15
-    e.process_request(
-        "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
-        "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
-    );
-    // order #16
-    e.process_request(
-        "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
-        "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
-    );
-    // order #17
-    e.process_request(
-        "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
-        "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
-    );
-    // cancel order #2
-    e.process_request(
-        "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
-    );
+    // // test matching order
+    // // order #15
+    // e.process_request(
+    //     "{\"time\": 1625787616, \"type\": \"NEW\", \"order_id\": 15, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"buy\", \"quantity\": 200, \"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
+    // );
+    // // order #16
+    // e.process_request(
+    //     "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 16, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"sell\", \"quantity\": 600, \"limit_price\": \"10.02\", \"tif\": \"good_till_cancel\"}"
+    // );
+    // // order #17
+    // e.process_request(
+    //     "{\"time\": 1625787618, \"type\": \"NEW\", \"order_id\": 17, \"symbol\": \"AAPL\", "
+    //     "\"side\": \"sell\", \"quantity\": 1000, \"limit_price\": \"10.00\", \"tif\": \"good_till_cancel\"}"
+    // );
+    // // cancel order #2
+    // e.process_request(
+    //     "{\"time\": 1625787619, \"type\": \"CANCEL\", \"order_id\": 2}"
+    // );
 
     return 0;
 }

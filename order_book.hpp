@@ -9,6 +9,7 @@
 
 #include "event.hpp"
 #include "order.hpp"
+#include "price4.hpp"
 
 namespace order
 {
@@ -29,6 +30,7 @@ public:
     virtual size_t number_of_valid_orders() const = 0;
     virtual const std::unordered_set<int>& valid_ids() const = 0;
     virtual std::vector<std::string> get_eod_orders() = 0;
+    virtual trade_event::EventBaseCPtr get_price_levels(const std::string& symbol) const = 0;
 };
 
 struct OrderInfo
@@ -56,6 +58,7 @@ public:
     const std::unordered_set<int>& valid_ids() const override { return valid_ids_; }
     // not const function because all orders are poped out
     std::vector<std::string> get_eod_orders() override;
+    trade_event::EventBaseCPtr get_price_levels(const std::string& symbol) const override;
 
 private:
     void insert_order(const LimitOrderPtr& o, int);
@@ -92,7 +95,7 @@ private:
     std::priority_queue<LimitOrderPtr, std::vector<LimitOrderPtr>, Comparer> hidden_queue_;
     std::unordered_set<int> valid_ids_;
     std::unordered_set<int> hidden_valid_ids_;
-    std::unordered_map<utils::Price4, int> price_levels_;
+    std::unordered_map<const utils::Price4, int> price_levels_;
     std::unordered_map<int, OrderInfo> order_info_;
 };
 
@@ -395,23 +398,131 @@ std::vector<trade_event::EventBaseCPtr> OrderBook<Comparer>::match_order(const O
     return trade_events;
 }
 
+// namespace
+// {
+// template <typename Comparer>
+// std::vector<std::string> get_eod_orders(
+//     std::priority_queue<LimitOrderPtr, std::vector<LimitOrderPtr>, Comparer>& order_queue,
+//     std::unordered_set<int> valid_ids
+// )
+// {
+//     std::vector<std::string> orders; 
+//     orders.reserve(valid_ids.size());
+
+//     while (!order_queue.empty())
+//     {
+//         const auto& curr_o = order_queue.top();
+//         if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids.count(curr_o->order_id()))
+//         {
+//             orders.emplace_back(json(curr_o).dump());
+//         }
+//         order_queue.pop();
+//     }
+//     valid_ids.clear();
+
+//     return orders;
+// }
+// }
+
+// template <typename Comparer>
+// std::vector<std::string> OrderBook<Comparer>::get_eod_orders(bool is_hidden)
+// {
+//     std::vector<std::string> orders;
+//     if (is_hidden)
+//     {
+//         orders = get_eod_orders(hidden_queue_, hidden_valid_ids_);
+//     }
+//     else
+//     {
+//         orders = get_eod_orders(order_queue_, valid_ids_);
+//     }
+//     return orders;
+// }
+
 template <typename Comparer>
 std::vector<std::string> OrderBook<Comparer>::get_eod_orders()
 {
     std::vector<std::string> orders; 
     orders.reserve(valid_ids_.size());
 
+    std::unordered_map<int, LimitOrderPtr> cache;
     while (!order_queue_.empty())
     {
         const auto& curr_o = order_queue_.top();
-        if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids_.count(curr_o->order_id()))
+        const int order_id = curr_o->order_id();
+        if (curr_o->tif() == order::time_in_force::good_till_cancel && valid_ids_.count(order_id))
         {
-            orders.emplace_back(json(curr_o).dump());
+            // cache in order to put iceberg order back
+            if (hidden_valid_ids_.count(order_id))
+            {
+                cache[order_id] = curr_o;
+            }
+            else
+            {
+                orders.emplace_back(json(curr_o).dump());
+            } 
         }
         order_queue_.pop();
     }
     valid_ids_.clear();
+
+    while (!hidden_queue_.empty())
+    {
+        const auto& curr_o = hidden_queue_.top();
+        const int order_id = curr_o->order_id();
+        if (curr_o->tif() == order::time_in_force::good_till_cancel && hidden_valid_ids_.count(order_id))
+        {
+            const LimitOrderCPtr display_o = cache.count(order_id) ? cache[order_id] : LimitOrderCPtr();
+            auto iceberg_o = std::make_shared<order::IcebergOrder>(display_o, curr_o);
+            orders.emplace_back(json(iceberg_o).dump());
+        }
+        hidden_queue_.pop();
+    }
+    hidden_valid_ids_.clear();
+
     return orders;
+}
+
+namespace
+{
+struct PriceInfoLessThan
+{
+    bool operator()(const std::pair<utils::Price4, int>& a, const std::pair<utils::Price4, int>& b)
+    {
+        return a.first < b.first;
+    }
+};
+
+struct PriceInfoGreaterThan
+{
+    bool operator()(const std::pair<utils::Price4, int>& a, const std::pair<utils::Price4, int>& b)
+    {
+        return a.first > b.first;
+    }
+};
+} // anonymous namespace
+
+template <typename Comparer>
+trade_event::EventBaseCPtr OrderBook<Comparer>::get_price_levels(
+    const std::string& symbol
+) const
+{
+    std::vector<std::pair<utils::Price4, int>> info; 
+    info.reserve(price_levels_.size());
+    for (const auto& kv : price_levels_)
+    {
+        info.emplace_back(std::pair<utils::Price4, int>(kv.first, kv.second));
+    }
+    if (side_ == order::order_side::bid)
+    {
+        std::sort(info.begin(), info.end(), PriceInfoGreaterThan());
+    }
+    else
+    {
+        std::sort(info.begin(), info.end(), PriceInfoLessThan());
+    }
+    
+    return std::make_shared<trade_event::MarketSnapEvent>(side_, symbol, info);
 }
 
 struct Less

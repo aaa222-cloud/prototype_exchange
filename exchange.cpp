@@ -81,12 +81,12 @@ void Exchange::process_request(const std::string& r)
 {
     auto events = matching_engine_->process_order(r);
     market_data_publisher_ ->publish(events);
-    // market_data_publisher_ ->publish(std::cout, events);
 }
 
 void Exchange::market_open()
 {
-    matching_engine_->prev_open_setup(close_order_cache_file_);
+    const auto events = matching_engine_->prev_open_setup(close_order_cache_file_);
+    market_data_publisher_->publish(events);
 }
 
 void Exchange::market_close()

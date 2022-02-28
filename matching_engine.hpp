@@ -38,7 +38,7 @@ public:
     std::vector<trade_event::EventBaseCPtr> process_order(const std::string& s);
     std::vector<trade_event::EventBaseCPtr> process_order(order::OrderBasePtr& o);
 
-    void prev_open_setup(const std::string& close_order_cache_file);
+    std::vector<trade_event::EventBaseCPtr> prev_open_setup(const std::string& close_order_cache_file);
     void eod_cleanup(const std::string& close_order_cache_file);
 
 private:
@@ -51,6 +51,10 @@ private:
     std::vector<trade_event::EventBaseCPtr> cancel_order(int order_id);
     std::vector<trade_event::EventBaseCPtr> insert_order(order::LimitOrderPtr& o);
     std::vector<trade_event::EventBaseCPtr> match_order(order::OrderBasePtr& o);
+
+    void eod_cleanup(const std::string& file_name, bool is_hidden);
+    std::vector<trade_event::EventBaseCPtr> prev_open_setup(
+        const std::string& file_name, bool is_hidden);
 
     std::unordered_map<std::string, order::OrderBookPtr> order_books_;
     // pointers to size rules

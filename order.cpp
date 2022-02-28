@@ -98,6 +98,20 @@ hidden_quantity_(hidden_quantity)
     initialise();
 }
 
+IcebergOrder::IcebergOrder(
+    const LimitOrderCPtr& display_o,
+    const LimitOrderCPtr& hidden_o
+)
+:
+LimitOrder(
+    display_o->time(), display_o->order_id(), display_o->quantity(), display_o->tif(), 
+    display_o->limit_price(), display_o->symbol(), display_o->side()
+    ),
+hidden_quantity_(hidden_o->quantity())
+{
+    initialise();
+}
+
 bool IcebergOrder::operator==(const IcebergOrder& a) const
 {
     return hidden_quantity_ == a.hidden_quantity_ && LimitOrder::operator==(a);
@@ -133,6 +147,7 @@ int IcebergOrder::reduce_quantity(int filled_quantity)
         OrderBase::reduce_quantity(quantity());
         hidden_quantity_ -= short_quantity;
     }
+    return quantity();
 }
 
 OrderBasePtr OrderFactory::create(const json& j)

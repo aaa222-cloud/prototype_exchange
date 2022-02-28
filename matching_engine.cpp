@@ -137,7 +137,9 @@ void MatchingEngine::eod_cleanup(const std::string& close_order_cache_file)
     }
 }
 
-void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
+std::vector<trade_event::EventBaseCPtr> MatchingEngine::prev_open_setup(
+    const std::string& close_order_cache_file
+)
 {
     std::ifstream infile(close_order_cache_file);
     std::string butter;
@@ -148,7 +150,17 @@ void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
             const json j = json::parse(butter);
             try
             {
-                auto o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
+                // order::LimitOrderPtr o;
+                // if (j.contains("display_quantity"))
+                // {
+                //     o = std::make_shared<order::IcebergOrder>(j.get<order::IcebergOrder>());
+                // }
+                // else
+                // {
+                //     o = std::make_shared<order::LimitOrder>(j.get<order::LimitOrder>());
+                // }
+                order::OrderBasePtr base_o = order::OrderFactory::create(j);
+                order::LimitOrderPtr o = std::dynamic_pointer_cast<order::LimitOrder>(base_o);
                 insert_order(o);
             }
             catch(const std::exception& e)
@@ -157,6 +169,16 @@ void MatchingEngine::prev_open_setup(const std::string& close_order_cache_file)
             }
         }
     }
+
+    std::vector<trade_event::EventBaseCPtr> info;
+    const size_t num_books = order_books_.size();
+    info.reserve(num_books);
+    for (const auto& [key, book] : order_books_)
+    {   
+        const auto event = book->get_price_levels(key.substr(0, key.find("&")));
+        info.push_back(event);
+    }
+    return info;
 }
 
 void update_events(

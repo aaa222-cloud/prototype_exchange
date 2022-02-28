@@ -22,7 +22,8 @@ enum trade_action
 enum trade_type
 {
     trade,
-    depth_update
+    depth_update,
+    market_snap
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(
@@ -38,7 +39,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(
     trade_type,
     {
         {trade, "TRADE"},
-        {depth_update, "DEPTH_UPDATE"}
+        {depth_update, "DEPTH_UPDATE"},
+        {market_snap, "MarketSnap"}
     }
 )
 
@@ -46,6 +48,7 @@ class EventBase;
 class TradeEvent;
 class DepthUpdateEvent;
 class OrderUpdateInfo;
+class MarketSnapEvent;
 
 typedef std::shared_ptr<EventBase> EventBasePtr;
 typedef std::shared_ptr<const EventBase> EventBaseCPtr;
@@ -58,6 +61,9 @@ typedef std::shared_ptr<const OrderUpdateInfo> OrderUpdateInfoCPtr;
 
 typedef std::shared_ptr<DepthUpdateEvent> DepthUpdateEventPtr;
 typedef std::shared_ptr<const DepthUpdateEvent> DepthUpdateEventCPtr;
+
+typedef std::shared_ptr<MarketSnapEvent> MarketSnapEventPtr;
+typedef std::shared_ptr<const MarketSnapEvent> MarketSnapEventCPtr;
 
 // to do: think about the inheritance structure - kinda wierd...
 // need virtual to_json() function
@@ -196,6 +202,37 @@ private:
     std::vector<OrderUpdateInfoCPtr> ask_order_update_info_;
 };
 
+class MarketSnapEvent : public EventBase
+{
+public:
+    MarketSnapEvent() = default;
+    MarketSnapEvent(
+        order::order_side side,
+        const std::string& symbol,
+        const std::vector<std::pair<utils::Price4, int>>& info
+    )
+    :
+    EventBase(trade_type::market_snap),
+    side_(side),
+    symbol_(symbol),
+    info_(info)
+    {}
+
+    json to_json() const override
+    { 
+        return json(*this);
+    }
+
+private:
+    // function for serialise
+    template <typename BasicJsonType>
+    friend void to_json(BasicJsonType& j, const MarketSnapEvent& o);
+
+    order::order_side side_;
+    std::string symbol_;
+    std::vector<std::pair<utils::Price4, int>> info_;
+};
+
 // function for serialise
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const EventBase& o)
@@ -253,6 +290,12 @@ void from_json(const BasicJsonType& j, DepthUpdateEvent& o)
     nlohmann::from_json(j, static_cast<EventBase&>(o));
     j.at("bid").get_to(o.bid_order_update_info_);
     j.at("ask").get_to(o.ask_order_update_info_);
+}
+
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const MarketSnapEvent& o)
+{
+    j = BasicJsonType{{"side", o.side_}, {"symbol", o.symbol_}, {"prices", o.info_}};
 }
 
 } // namespace trade_event
