@@ -89,19 +89,3 @@ bool operator>=(const Price4& a, const Price4& b)
 }
 
 } // namespace utils
-
-// for test purpose
-// int main()
-// {
-//     Price4 p1("139.96"), p2("139"), p3("139.01"), p4("139.00");
-//     std::cout << p1.unscaled() << ", to_str = " << p1.to_str() << std::endl;
-//     std::cout << p2.unscaled() << ", to_str = " << p2.to_str() << std::endl;
-//     std::cout << p3.unscaled() << ", to_str = " << p3.to_str() << std::endl;
-//     std::cout << p4.unscaled() << ", to_str = " << p4.to_str() << std::endl;
-
-//     std::cout << "p1 < p2 ? " << (p1 < p2) << std::endl;
-//     std::cout << "p1 >= p2 ? " << (p1 >= p2) << std::endl;
-//     std::cout << "p3 > p4 ? " << (p3 > p4) << std::endl;
-//     std::cout << "p3 <= p4 ? " << (p3 <= p4) << std::endl;
-//     return 0;
-// }
