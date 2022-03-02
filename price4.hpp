@@ -42,7 +42,6 @@ bool operator<=(const Price4& a, const Price4& b);
 bool operator>(const Price4& a, const Price4& b);
 bool operator>=(const Price4& a, const Price4& b);
 
-// serialise - to do: is there a better way?
 template <typename BasicJsonType>
 void to_json(BasicJsonType& j, const Price4& p)
 {

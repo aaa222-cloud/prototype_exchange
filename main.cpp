@@ -212,11 +212,16 @@ int main(int, char**) {
     // comes an iceberg order - partially matched
     e.process_request(
         "{\"time\": 1625787617, \"type\": \"NEW\", \"order_id\": 0, \"symbol\": \"AAPL\", "
-        "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 800, "
+        "\"side\": \"BUY\", \"display_quantity\": 100, \"hidden_quantity\": 900, "
         "\"limit_price\": \"10.03\", \"tif\": \"good_till_cancel\"}"
         );
     e.market_close();
     e.market_open();
+
+    // replenish iceberg order
+    e.process_request(
+        "{\"time\": 1625787619, \"type\": \"REPLENISH\", \"order_id\": 0, \"quantity\": 100}"
+    );
 
     // order #15
     e.process_request(

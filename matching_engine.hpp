@@ -51,6 +51,7 @@ private:
     std::vector<trade_event::EventBaseCPtr> cancel_order(int order_id);
     std::vector<trade_event::EventBaseCPtr> insert_order(order::LimitOrderPtr& o);
     std::vector<trade_event::EventBaseCPtr> match_order(order::OrderBasePtr& o);
+    std::vector<trade_event::EventBaseCPtr> replenish_order(int order_id, int quantity);
 
     void eod_cleanup(const std::string& file_name, bool is_hidden);
     std::vector<trade_event::EventBaseCPtr> prev_open_setup(

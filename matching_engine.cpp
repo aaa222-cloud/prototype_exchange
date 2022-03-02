@@ -96,9 +96,27 @@ ticker_rules_(ticker_rules)
 std::vector<trade_event::EventBaseCPtr> MatchingEngine::cancel_order(int order_id)
 {
     std::vector<trade_event::EventBaseCPtr> msgs;
+    msgs.reserve(1);
     for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
     {
         auto msg = it->second->cancel_order(order_id);
+        if (msg)
+        {
+            msgs.push_back(msg);
+        }
+    }
+    return msgs;
+}
+
+std::vector<trade_event::EventBaseCPtr> MatchingEngine::replenish_order(int order_id, int quantity)
+{
+    std::vector<trade_event::EventBaseCPtr> msgs;
+    msgs.reserve(1);
+    for (auto it = order_books_.begin(); it != order_books_.end(); ++it)
+    {
+        const std::string& key = it->first;
+        const std::string symbol = key.substr(0, key.find("&"));
+        auto msg = it->second->replenish_order(order_id, quantity, symbol);
         if (msg)
         {
             msgs.push_back(msg);
@@ -225,6 +243,13 @@ std::vector<trade_event::EventBaseCPtr> MatchingEngine::process_order(const std:
             if (j.at("type") == "CANCEL")
             {
                 events = cancel_order(j.at("order_id").template get<int>());
+            }
+            else if (j.at("type") == "REPLENISH")
+            {
+                events = replenish_order(
+                    j.at("order_id").template get<int>(), 
+                    j.at("quantity").template get<int>()
+                );
             }
             else if (j.at("type") == "NEW")
             {

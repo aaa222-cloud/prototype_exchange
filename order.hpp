@@ -113,6 +113,7 @@ public:
     virtual int total_quantity() const { return quantity_; }
     virtual json to_json() const { return json(*this); }
 
+    void set_quantity(int quantity) { quantity_ = quantity; }
     int time() const { return time_; }
     int order_id() const { return order_id_; }
     int quantity() const { return quantity_; }
@@ -235,6 +236,7 @@ public:
 
     int reduce_quantity(int filled_quantity) override;
     int total_quantity() const override;
+    void set_hidden_quantity(int quantity) { hidden_quantity_ = quantity; }
     json to_json() const override { return json(*this); }
 
     bool operator==(const IcebergOrder& a) const;
