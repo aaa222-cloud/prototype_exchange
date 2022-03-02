@@ -20,8 +20,8 @@ void MarketDataPublisher::publish(const std::vector<trade_event::EventBaseCPtr>&
     std::ofstream f(market_data_state_file_, std::ios::app);
     for (const auto& e : events)
     {
-        //f << e->to_json() << "\n";
-        std::cout << e->to_json() << std::endl; // write to cout for debug purpose
+        f << e->to_json() << "\n";
+        // std::cout << e->to_json() << std::endl; // write to cout for debug purpose
     }
     f.close();
 }
